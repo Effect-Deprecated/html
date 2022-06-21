@@ -7,5 +7,6 @@ export function toDocumentFragment(
   self: Template
 ): DocumentFragment {
   concreteTemplate(self)
+  // clone deeply the fragment
   return document.importNode(self.content, true)
 }

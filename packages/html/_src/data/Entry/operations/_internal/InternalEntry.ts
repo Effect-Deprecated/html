@@ -8,7 +8,7 @@ export class InternalEntry implements Entry {
     readonly type: string,
     readonly template: TemplateStringsArray,
     readonly content: ParentNode,
-    readonly updates: ImmutableArray<(u: unknown) => Effect.UIO<void>>,
+    readonly updates: ImmutableArray<(u: any) => Effect<never, any, void>>,
     readonly wire: Maybe<Wire>
   ) {}
 }

@@ -9,7 +9,7 @@
 export function unroll(
   self: Component,
   hole: Hole
-): Effect.UIO<Wire> {
+): Effect<TemplateCache, Template.InvalidElementException | Template.MissingNodeException, Wire> {
   return Effect.Do()
     .bind("values", () => hole.values)
     .tap(({ values }) => self.unrollValues(values))
@@ -21,7 +21,8 @@ export function unroll(
             self.setEntryEffect(hole.toEntry) :
             Effect.succeed(() => entry.value)
         )
-    ).tap(({ entry, values }) =>
+    )
+    .tap(({ entry, values }) =>
       Chunk.from(values).zipWithIndex.mapEffectDiscard((tp) => {
         const { tuple: [value, index] } = tp
 

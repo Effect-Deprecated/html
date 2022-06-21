@@ -1,7 +1,7 @@
-import { concreteEntry, InternalEntry } from "@effect/html/data/Entry/operations/_internal/InternalEntry"
+import { concreteEntry } from "@effect/html/data/Entry/operations/_internal/InternalEntry"
 
 /**
- * @tsplus fluent ets/Entry/Ops updateWithValue
+ * @tsplus fluent ets/Entry updateWithValue
  */
 export function updateWithValue<V>(
   self: Entry,

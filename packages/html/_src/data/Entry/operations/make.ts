@@ -7,8 +7,7 @@ export function make(
   type: string,
   template: TemplateStringsArray,
   content: ParentNode,
-  updates: ImmutableArray<(u: unknown) => Effect.UIO<void>>,
-  wire: Maybe<Wire>
+  updates: ImmutableArray<(u: any) => Effect<never, any, void>>
 ): Entry {
-  return new InternalEntry(type, template, content, updates, wire)
+  return new InternalEntry(type, template, content, updates, Maybe.none)
 }

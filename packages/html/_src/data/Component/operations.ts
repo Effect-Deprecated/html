@@ -9,4 +9,5 @@ export * from "@effect/html/data/Component/operations/spliceStack"
 export * from "@effect/html/data/Component/operations/stackLength"
 export * from "@effect/html/data/Component/operations/unroll"
 export * from "@effect/html/data/Component/operations/unrollValues"
+export * from "@effect/html/data/Component/operations/updateWire"
 // codegen:end
