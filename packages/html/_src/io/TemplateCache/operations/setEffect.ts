@@ -1,5 +1,5 @@
 /**
- * @tsplus static ets/TemplateCache/Ops set
+ * @tsplus static ets/TemplateCache/Ops setEffect
  */
 export function setEffect<K extends TemplateStringsArray, R, E>(
   k: K,

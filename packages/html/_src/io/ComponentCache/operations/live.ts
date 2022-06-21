@@ -17,6 +17,15 @@ export class LiveComponentCache implements ComponentCache {
   get<K extends Node>(k: K): Effect.UIO<Maybe<Component>> {
     return this.weakCache.get(k)
   }
+  getOrElse<K extends Node, A>(k: K, f: LazyArg<A>): Effect.UIO<A | Component> {
+    return this.weakCache.getOrElse(k, f)
+  }
+  getOrElseEffect<K extends Node, R, E, A>(
+    k: K,
+    fa: Effect<R, E, A>
+  ): Effect<R, E, A | Component> {
+    return this.weakCache.getOrElseEffect(k, fa)
+  }
   set<K extends Node>(
     k: K,
     v: Component

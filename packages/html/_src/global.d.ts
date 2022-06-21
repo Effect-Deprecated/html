@@ -55,6 +55,10 @@ import { TemplateCache } from "@effect/html/io/TemplateCache"
 /**
  * @tsplus global
  */
+import { KeyedCache } from "@effect/html/io/KeyedCache"
+/**
+ * @tsplus global
+ */
 import { Component } from "@effect/html/data/Component"
 /**
  * @tsplus global

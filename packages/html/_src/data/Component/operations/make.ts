@@ -5,8 +5,8 @@ import { InternalComponent } from "@effect/html/data/Component/operations/_inter
  */
 export function make(
   stack: SynchronizedRef<Array<Maybe<Component>>>,
-  entry: Maybe<Entry>,
-  wire: Maybe<Component>
+  entry: Ref<Maybe<Entry>>,
+  wire: Ref<Maybe<Wire | HTMLOrSVGElement>>
 ): Component {
   return new InternalComponent(stack, entry, wire)
 }

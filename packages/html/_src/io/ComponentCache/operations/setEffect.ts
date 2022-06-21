@@ -1,5 +1,5 @@
 /**
- * @tsplus static ets/ComponentCache/Ops set
+ * @tsplus static ets/ComponentCache/Ops setEffect
  */
 export function setEffect<K extends Node, R, E>(
   k: K,

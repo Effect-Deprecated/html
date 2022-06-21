@@ -9,7 +9,9 @@ export function toEntry(
 ) {
   concreteHole(self)
 
-  return TemplateCache.getOrElse(self.template, self.toTemplate).flatMap((template) =>
+  return TemplateCache.getOrElseEffect(self.template, TemplateCache.set(self.template, self.toTemplate)).flatMap((
+    template
+  ) =>
     template.updates.map((updates) =>
       Entry(self.type, self.template, template.toDocumentFragment, updates.toImmutableArray)
     )

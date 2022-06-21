@@ -4,7 +4,9 @@ import { InternalComponent } from "@effect/html/data/Component/operations/_inter
  * @tsplus static ets/Component/Ops empty
  */
 export function empty(): Effect.UIO<Component> {
-  return SynchronizedRef.make(Array.empty<Maybe<Component>>()).map((_) =>
-    new InternalComponent(_, Maybe.none, Maybe.none)
-  )
+  return Effect.struct({
+    stack: SynchronizedRef.make(Array.empty<Maybe<Component>>()),
+    entry: Ref.make(Maybe.none),
+    wire: Ref.make(Maybe.none)
+  }).map(({ entry, stack, wire }) => new InternalComponent(stack, entry, wire))
 }

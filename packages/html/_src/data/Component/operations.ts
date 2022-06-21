@@ -1,6 +1,8 @@
 // codegen:start {preset: barrel, include: ./operations/*.ts, prefix: "@effect/html/data/Component"}
 export * from "@effect/html/data/Component/operations/empty"
 export * from "@effect/html/data/Component/operations/entry"
+export * from "@effect/html/data/Component/operations/fixed"
+export * from "@effect/html/data/Component/operations/getOrSet"
 export * from "@effect/html/data/Component/operations/getOrSetStackEntry"
 export * from "@effect/html/data/Component/operations/make"
 export * from "@effect/html/data/Component/operations/removeStackEntry"

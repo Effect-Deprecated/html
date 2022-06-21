@@ -17,6 +17,15 @@ export class LiveTemplateCache implements TemplateCache {
   get<K extends TemplateStringsArray>(k: K): Effect.UIO<Maybe<Template>> {
     return this.weakCache.get(k)
   }
+  getOrElse<K extends TemplateStringsArray, A>(k: K, f: LazyArg<A>): Effect.UIO<A | Template> {
+    return this.weakCache.getOrElse(k, f)
+  }
+  getOrElseEffect<K extends TemplateStringsArray, R, E, A>(
+    k: K,
+    fa: Effect<R, E, A>
+  ): Effect<R, E, A | Template> {
+    return this.weakCache.getOrElseEffect(k, fa)
+  }
   set<K extends TemplateStringsArray>(
     k: K,
     v: Template
