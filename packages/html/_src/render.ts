@@ -8,11 +8,19 @@ interface Tag {
     id: unknown
   ): (
     hole: Hole
-  ) => Effect<TemplateCache | KeyedCache, Template.InvalidElementException | Template.MissingNodeException, Wire>
+  ) => Effect<
+    TemplateCache | KeyedCache,
+    Template.InvalidElementException | Template.MissingNodeException,
+    Wire | ParentNode | ChildNode
+  >
   node: (
     template: TemplateStringsArray,
     ...values: Array<unknown>
-  ) => Effect<TemplateCache | KeyedCache, Template.InvalidElementException | Template.MissingNodeException, ParentNode>
+  ) => Effect<
+    TemplateCache | KeyedCache,
+    Template.InvalidElementException | Template.MissingNodeException,
+    ParentNode | ChildNode
+  >
 }
 
 function tag(
@@ -33,7 +41,11 @@ function tag(
         id: unknown
       ): (
         hole: Hole
-      ) => Effect<TemplateCache | KeyedCache, Template.InvalidElementException | Template.MissingNodeException, Wire> {
+      ) => Effect<
+        TemplateCache | KeyedCache,
+        Template.InvalidElementException | Template.MissingNodeException,
+        Wire | ParentNode | ChildNode
+      > {
         return (hole: Hole) =>
           KeyedCache.getOrElseEffect(ref, KeyedCache.set(ref, HashMap.empty())).flatMap((memo) =>
             Effect.succeed(memo.get(id)).flatMap((fixed) =>
@@ -48,19 +60,23 @@ function tag(
         Component.empty().zip(SynchronizedRef.make(values).map((ref) => Hole(type, template, ref))).flatMap((tp) => {
           const { tuple: [component, hole] } = tp
 
-          return component.unroll(hole).flatMap((_) => _.valueOf)
+          return component.unroll(hole).flatMap((_) =>
+            Wire.isWire(_) ? _.valueOf : Effect.succeed(_.valueOf() as ParentNode | ChildNode)
+          )
         })
     }
   )
 }
 
-export function render<A extends Element>(
+export function render<A extends Element, R, E, B extends (Hole | HTMLOrSVGElement)>(
   where: A,
-  fa: Effect.UIO<Hole | HTMLOrSVGElement>
-): Effect<ComponentCache | TemplateCache, Template.InvalidElementException, A> {
+  fa: Effect<R, E, B>
+) {
   return fa.flatMap((hole) =>
     ComponentCache.getOrElseEffect(where, ComponentCache.setEffect(where, Component.empty())).flatMap((info) =>
-      (Hole.isHole(hole) ? info.unroll(hole) : Effect.succeed(hole)).flatMap((wire) => info.updateWire(wire)).flatMap(
+      (Hole.isHole(hole) ? info.unroll(hole) : Effect.succeed(hole as HTMLOrSVGElement)).flatMap((wire) =>
+        info.updateWire(wire)
+      ).flatMap(
         (wire) => {
           if (wire.isSome()) {
             // valueOf() simply returns the node itself, but in case it was a "wire"
@@ -69,16 +85,22 @@ export function render<A extends Element>(
             // (wires are basically persistent fragments facades with special behavior)
             return (Wire.isWire(wire.value) ?
               wire.value.valueOf :
-              Effect.succeed(wire.value.valueOf() as Node)).flatMap((node) =>
-                Effect.succeed(() => where.replaceChildren(node))
-              ).as(where)
+              Effect.succeed(wire.value.valueOf() as Node)).flatMap((node) => {
+                console.log(where, node)
+                return Effect.succeed(() => where.replaceChildren(node))
+              }).as(where)
           }
           return Effect.succeed(where)
         }
       )
     )
   )
+    .provideSomeLayer(TemplateCache.live + ComponentCache.live + KeyedCache.live)
 }
 
 export const html = tag("html")
 export const svg = tag("svg")
+
+export function bootstrap<E, A>(fa: Effect<never, E, A>): Promise<A> {
+  return fa.tapErrorTrace((trace) => Effect.succeed(() => console.error(trace.stackTrace))).unsafeRunPromise()
+}

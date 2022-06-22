@@ -1,5 +1,6 @@
 import {
   InvalidElementException as InvalidElementExceptionInternal,
+  MissingNameException as MissingNameExceptionInternal,
   MissingNodeException as MissingNodeExceptionInternal,
   NoNextSiblingException as NoNextSiblingExceptionInternal,
   NoParentNodeException as NoParentNodeExceptionInternal,
@@ -7,6 +8,7 @@ import {
 } from "@effect/html/data/Template/errors"
 import type {
   InvalidElementConstructor,
+  MissingNameConstructor,
   MissingNodeConstructor,
   NoNextSiblingConstructor,
   NoParentNodeConstructor,
@@ -27,6 +29,7 @@ export declare namespace Template {
   export interface NoTextNodeException extends NoTextNodeExceptionInternal {}
   export interface MissingNodeException extends MissingNodeExceptionInternal {}
   export interface InvalidElementException extends InvalidElementExceptionInternal {}
+  export interface MissingNameException extends MissingNameExceptionInternal {}
 }
 
 /**
@@ -45,7 +48,8 @@ export interface TemplateOps {
   NoParentNodeException: NoParentNodeConstructor
   NoTextNodeException: NoTextNodeConstructor
   InvalidElementException: InvalidElementConstructor
-  MissingNodeException: MissingNodeConstructor
+  MissingNodeException: MissingNameConstructor
+  MissingNameException: MissingNodeConstructor
 }
 export const Template: TemplateOps = {
   $: {},
@@ -53,6 +57,7 @@ export const Template: TemplateOps = {
   InvalidElementException: InvalidElementExceptionInternal,
   NoParentNodeException: NoParentNodeExceptionInternal,
   NoTextNodeException: NoTextNodeExceptionInternal,
+  MissingNameException: MissingNameExceptionInternal,
   MissingNodeException: MissingNodeExceptionInternal
 }
 

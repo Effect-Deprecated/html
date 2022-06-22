@@ -8,6 +8,6 @@ export function make(
   template: TemplateStringsArray,
   content: ParentNode,
   updates: ImmutableArray<(u: any) => Effect<never, any, void>>
-): Entry {
-  return new InternalEntry(type, template, content, updates, Maybe.none)
+): Effect.UIO<Entry> {
+  return SynchronizedRef.make(Maybe.none).map((wire) => new InternalEntry(type, template, content, updates, wire))
 }

@@ -5,11 +5,11 @@ import { concreteComponent } from "@effect/html/data/Component/operations/_inter
  */
 export function updateWire(
   self: Component,
-  wire: Wire | HTMLOrSVGElement
-): Effect.UIO<Maybe<Wire | HTMLOrSVGElement>> {
+  wire: Wire | HTMLOrSVGElement | ParentNode | ChildNode
+): Effect.UIO<Maybe<Wire | HTMLOrSVGElement | ParentNode | ChildNode>> {
   concreteComponent(self)
 
-  return self.wire.getAndUpdateSome((oldValue) => {
+  return self.wire.updateSomeAndGet((oldValue) => {
     if (oldValue != Maybe.some(wire)) {
       return Maybe.some(Maybe.some(wire))
     }

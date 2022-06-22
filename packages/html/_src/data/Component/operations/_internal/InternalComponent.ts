@@ -6,7 +6,7 @@ export class InternalComponent implements Component {
   constructor(
     readonly stack: SynchronizedRef<Array<Maybe<Component>>>,
     readonly entry: Ref<Maybe<Entry>>,
-    readonly wire: Ref<Maybe<Wire | HTMLOrSVGElement>>
+    readonly wire: Ref<Maybe<Wire | HTMLOrSVGElement | ParentNode | ChildNode>>
   ) {}
 }
 

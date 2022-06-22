@@ -8,5 +8,5 @@ export function spliceStack(
   index: number
 ): Effect.UIO<void> {
   concreteComponent(self)
-  return self.stack.getAndUpdateEffect((_) => Effect.succeed(() => _.splice(index)).as(_)).unit()
+  return self.stack.updateEffect((_) => Effect.succeed(() => _.splice(index)).as(_))
 }

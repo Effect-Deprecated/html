@@ -9,7 +9,7 @@ export class InternalEntry implements Entry {
     readonly template: TemplateStringsArray,
     readonly content: ParentNode,
     readonly updates: ImmutableArray<(u: any) => Effect<never, any, void>>,
-    readonly wire: Maybe<Wire>
+    readonly wire: SynchronizedRef<Maybe<Wire | ChildNode | ParentNode>>
   ) {}
 }
 

@@ -91,13 +91,13 @@ function synchronize(
             get(Maybe.fromNullable(b[s.bEnd - s.bStart]), 0)) :
           Effect.succeed(before)
       ).flatMap((node) =>
-        Effect.loop(s.bStart + 1, (bStart) => (bStart - 1) < s.bEnd, (_) => _++)((bStart) =>
+        Effect.loop(s.bStart, (bStart) => bStart < s.bEnd, (_) => _ + 1)((bStart) =>
           get(Maybe.fromNullable(b[bStart]), 1)
             .flatMap((_) => Effect.succeed(() => parentNode.insertBefore(_, node)))
             .as(bStart)
         ).map((_) => _.unsafeLast!)
       ).map((bStart) => {
-        s.bStart = bStart
+        s.bStart = bStart + 1
 
         return s
       })
@@ -105,14 +105,14 @@ function synchronize(
 
     // remove head or tail: fast path
     if (s.bEnd === s.bStart) {
-      return Effect.loop(s.aStart, (aStart) => aStart < s.aEnd, (_) => _++)((aStart) =>
+      return Effect.loop(s.aStart, (aStart) => aStart < s.aEnd, (_) => _ + 1)((aStart) =>
         get(Maybe.fromNullable(a[aStart]), -1)
           .flatMap((_) =>
             s.map.isEmpty || !s.map.has(_) ? Effect.succeed(() => parentNode.removeChild(_)) : Effect.unit
           )
           .as(aStart)
       ).map((_) => _.unsafeLast!).map((aStart) => {
-        s.aStart = aStart
+        s.aStart = aStart + 1
 
         return s
       })
@@ -151,18 +151,16 @@ function synchronize(
       // or asymmetric too
       // [1, 2, 3, 4, 5]
       // [1, 2, 3, 5, 6, 4]
-      return get(Maybe.fromNullable(a[s.aEnd - 1]), -1)
+      return get(Maybe.fromNullable(a[s.aEnd]), -1)
         .flatMap(({ nextSibling }) =>
           Effect.fromMaybe(Maybe.fromNullable(nextSibling)).mapError(() => new Template.NoNextSiblingException())
         )
         .flatMap((node) =>
-          get(Maybe.fromNullable(b[s.bEnd - 1]), 1).flatMap((_) =>
-            Effect.succeed(() => parentNode.insertBefore(_, node))
-          )
+          get(Maybe.fromNullable(b[s.bEnd]), 1).flatMap((_) => Effect.succeed(() => parentNode.insertBefore(_, node)))
         )
-        .zipRight(get(Maybe.fromNullable(b[s.bStart + 1]), 1))
+        .zipRight(get(Maybe.fromNullable(b[s.bStart]), 1))
         .zip(
-          get(Maybe.fromNullable(a[s.aStart + 1]), -1).flatMap(({ nextSibling }) =>
+          get(Maybe.fromNullable(a[s.aStart]), -1).flatMap(({ nextSibling }) =>
             Effect.fromMaybe(Maybe.fromNullable(nextSibling)).mapError(() => new Template.NoNextSiblingException())
           )
         )
@@ -241,13 +239,13 @@ function synchronize(
         // will be processed at zero cost
         if (sequence > (index - s.bStart)) {
           return get(Maybe.fromNullable(a[s.aStart]), 0).flatMap((childNode) =>
-            Effect.loop(s.bStart + 1, (bStart) => (bStart - 1) < index, (_) => _++)((bStart) =>
+            Effect.loop(s.bStart, (bStart) => bStart < index, (_) => _ + 1)((bStart) =>
               get(Maybe.fromNullable(b[bStart]), 1).flatMap((node) =>
                 Effect.succeed(() => parentNode.insertBefore(node, childNode))
               ).as(bStart)
             )
           ).map((_) => _.unsafeLast!).map((bStart) => {
-            s.bStart = bStart
+            s.bStart = bStart + 1
 
             return s
           })
@@ -257,8 +255,8 @@ function synchronize(
         // moving both source and target indexes forward, hoping that some
         // similar node will be found later on, to go back to the fast path
         return Effect.struct({
-          node: get(Maybe.fromNullable(b[s.bStart + 1]), 1),
-          childNode: get(Maybe.fromNullable(b[s.bStart + 2]), 1)
+          node: get(Maybe.fromNullable(b[s.bStart]), 1),
+          childNode: get(Maybe.fromNullable(b[s.aStart]), 1)
         }).flatMap(({ childNode, node }) =>
           Effect.succeed(() =>
             parentNode.replaceChild(
@@ -268,6 +266,7 @@ function synchronize(
           )
         ).as(() => {
           s.bStart = s.bStart + 2
+          s.aStart = s.aStart + 1
 
           return s
         })
@@ -282,7 +281,7 @@ function synchronize(
     } // this node has no meaning in the future list, so it's more than safe
     // to remove it, and check the next live node out instead, meaning
     // that only the live list index should be forwarded
-    return get(Maybe.fromNullable(a[s.aStart + 1]), -1).flatMap((node) =>
+    return get(Maybe.fromNullable(a[s.aStart]), -1).flatMap((node) =>
       Effect.succeed(() => parentNode.removeChild(node))
     ).as(() => {
       s.aStart = s.aStart + 1
@@ -342,17 +341,19 @@ function anyContent(
   | Template.NoTextNodeException,
   void
 > {
-  return oldValueRef.updateEffect(
+  return oldValueRef.updateSomeEffect(
     (
       oldValue
-    ): Effect<
-      never,
-      | Wire.NoFirstChildException
-      | Wire.NoLastChildException
-      | Template.NoNextSiblingException
-      | Template.NoParentNodeException
-      | Template.NoTextNodeException,
-      Maybe<unknown>
+    ): Maybe<
+      Effect<
+        never,
+        | Template.NoNextSiblingException
+        | Wire.NoFirstChildException
+        | Wire.NoLastChildException
+        | Template.NoParentNodeException
+        | Template.NoTextNodeException,
+        Maybe<unknown>
+      >
     > => {
       switch (typeof newValue) {
         // primitives are handled as text content
@@ -360,15 +361,17 @@ function anyContent(
         case "number":
         case "boolean":
           if (oldValue != Maybe.some(newValue)) {
-            return textRef.updateAndGetEffect((text) =>
-              Effect.fromMaybe(text).flatMap((_) =>
-                Effect.succeed(() => {
-                  _.data = newValue.toString()
-                }).as(_)
-              ).catchAll(() => Effect.succeed(() => document.createTextNode(String(newValue)))).asSome()
-            ).flatMap((_) => Effect.fromMaybe(_).mapError(() => new Template.NoTextNodeException())).flatMap((text) =>
-              nodesRef.updateEffect((nodes) => diff(comment, nodes, [text]))
-            ).as(newValue).asSome()
+            return Maybe.some(
+              textRef.updateAndGetEffect((text) =>
+                Effect.fromMaybe(text).flatMap((_) =>
+                  Effect.succeed(() => {
+                    _.data = newValue.toString()
+                  }).as(_)
+                ).catchAll(() => Effect.succeed(() => document.createTextNode(String(newValue)))).asSome()
+              ).flatMap((_) => Effect.fromMaybe(_).mapError(() => new Template.NoTextNodeException())).flatMap((text) =>
+                nodesRef.updateEffect((nodes) => diff(comment, nodes, [text]))
+              ).as(newValue).asSome()
+            )
           }
           break
         // null, and undefined are used to cleanup previous content
@@ -376,21 +379,23 @@ function anyContent(
         case "undefined":
           if (newValue == null) {
             if (oldValue != Maybe.fromNullable(newValue)) {
-              return nodesRef.updateEffect((nodes) => diff(comment, nodes, [])).as(newValue).asSome()
+              return Maybe.some(nodesRef.updateEffect((nodes) => diff(comment, nodes, [])).as(newValue).asSome())
             }
 
-            return Effect.succeed(oldValue)
+            return Maybe.none
           }
           // arrays and nodes have a special treatment
           if (Array.isArray(newValue)) {
             // arrays can be used to cleanup, if empty
             // or diffed, if these contains nodes or "wires"
             if (newValue.length === 0 || Wire.isWire(newValue[0]) || isNode(newValue[0])) {
-              nodesRef.updateEffect((nodes) => diff(comment, nodes, newValue)).as(newValue).asSome()
+              return Maybe.some(nodesRef.updateEffect((nodes) => diff(comment, nodes, newValue)).as(newValue).asSome())
             }
             // in all other cases the content is stringified as is
-            return Effect.succeed(String(newValue)).flatMap((value) =>
-              anyContent(oldValueRef, textRef, nodesRef, comment, value).as(value).asSome()
+            return Maybe.some(
+              Effect.succeed(String(newValue)).flatMap((value) =>
+                anyContent(oldValueRef, textRef, nodesRef, comment, value).as(value).asSome()
+              )
             )
           }
           // if the new value is a DOM node, or a wire, and it's
@@ -399,28 +404,32 @@ function anyContent(
           // There is no `else` here, meaning if the content
           // is not expected one, nothing happens, as easy as that.
           if (oldValue != Maybe.some(newValue) && (Wire.isWire(newValue) || isNode(newValue))) {
-            return nodesRef.updateEffect((nodes) => {
-              const newNodes = Chunk.builder<Node | Wire>()
+            return Maybe.some(
+              nodesRef.updateEffect((nodes) => {
+                const newNodes = Chunk.builder<Node | Wire>()
 
-              if ((Wire.isWire(newValue) && newValue.nodeType === 11)) {
-                newValue.childNodes.forEach(newNodes.append)
-              } else if ((isNode(newValue) && newValue.nodeType === 11)) {
-                newValue.childNodes.forEach(newNodes.append)
-              } else {
-                newNodes.append(newValue)
-              }
+                if ((Wire.isWire(newValue) && newValue.nodeType === 11)) {
+                  newValue.childNodes.forEach(newNodes.append)
+                } else if ((isNode(newValue) && newValue.nodeType === 11)) {
+                  newValue.childNodes.forEach(newNodes.append)
+                } else {
+                  newNodes.append(newValue)
+                }
 
-              return diff(comment, nodes, newNodes.build().toArray)
-            }).as(newValue).asSome()
+                return diff(comment, nodes, newNodes.build().toArray)
+              }).as(newValue).asSome()
+            )
           }
           break
         case "function":
-          return Effect.succeed(() => newValue(comment)).flatMap((value) =>
-            anyContent(oldValueRef, textRef, nodesRef, comment, value).as(() => value).asSome()
+          return Maybe.some(
+            Effect.succeed(() => newValue(comment)).flatMap((value) =>
+              anyContent(oldValueRef, textRef, nodesRef, comment, value).as(() => value).asSome()
+            )
           )
       }
 
-      return Effect.succeed(oldValue)
+      return Maybe.none
     }
   )
 }
@@ -437,16 +446,18 @@ function handleAnything(comment: Node) {
 function boolean(node: Element, key: string, oldValue: boolean): Effect.UIO<(newValue: boolean) => Effect.UIO<void>> {
   return SynchronizedRef.make(oldValue).map((ref) =>
     (newValue: unknown): Effect.UIO<void> =>
-      ref.updateEffect((oldValue) => {
+      ref.updateSomeEffect((oldValue) => {
         if (oldValue !== !!newValue) {
           // when IE won't be around anymore ...
           // node.toggleAttribute(key, oldValue = !!newValue);
-          return Effect.fromMaybe(Maybe.fromPredicate(newValue, (_) => !!_)).flatMap((val) =>
-            Effect.succeed(() => node.setAttribute(key, "")).as(!!val)
-          ).catchAll(() => Effect.succeed(() => node.removeAttribute(key)).as(false))
+          return Maybe.some(
+            Effect.fromMaybe(Maybe.fromPredicate(newValue, (_) => !!_)).flatMap((val) =>
+              Effect.succeed(() => node.setAttribute(key, "")).as(!!val)
+            ).catchAll(() => Effect.succeed(() => node.removeAttribute(key)).as(false))
+          )
         }
 
-        return Effect.succeed(oldValue)
+        return Maybe.none
       })
   )
 }
@@ -497,17 +508,19 @@ function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => E
 
   return SynchronizedRef.make<Maybe<EventListenerOrEventListenerObject>>(Maybe.none).map((ref) =>
     (newValue: unknown) =>
-      ref.updateEffect((oldValue) => {
+      ref.updateSomeEffect((oldValue) => {
         const info = Array.isArray(newValue) ? newValue : [newValue, false]
         if (oldValue != Maybe.some(info[0])) {
-          return Effect.fromMaybe(oldValue).flatMap((_) =>
-            Effect.succeed(() => node.removeEventListener(type, _, info[1])).as(oldValue)
-          ).catchAll(() =>
-            Effect.succeed(() => node.addEventListener(type, info[0], info[1])).as(() => info[0]).asSome()
+          return Maybe.some(
+            Effect.fromMaybe(oldValue).flatMap((_) =>
+              Effect.succeed(() => node.removeEventListener(type, _, info[1])).as(oldValue)
+            ).catchAll(() =>
+              Effect.succeed(() => node.addEventListener(type, info[0], info[1])).as(() => info[0]).asSome()
+            )
           )
         }
 
-        return Effect.succeed(oldValue)
+        return Maybe.none
       })
   )
 }
@@ -515,14 +528,14 @@ function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => E
 function ref(node: Element): Effect.UIO<(value: unknown) => Effect.UIO<void>> {
   return SynchronizedRef.make<Maybe<Function>>(Maybe.none).map((ref) =>
     (value: unknown) =>
-      ref.updateEffect((oldValue) => {
+      ref.updateSomeEffect((oldValue) => {
         if (oldValue != Maybe.some(value)) {
           if (typeof value === "function") {
-            return Effect.succeed(() => value(node)).as(value).asSome()
+            return Maybe.some(Effect.succeed(() => value(node)).as(value).asSome())
           }
         }
 
-        return Effect.succeed(oldValue)
+        return Maybe.none
       })
   )
 }
@@ -549,29 +562,31 @@ function attribute(node: Element, name: string): Effect.UIO<(value: string) => E
   return SynchronizedRef.make<{ orphan: boolean; oldValue: Maybe<string> }>({ orphan: true, oldValue: Maybe.none })
     .map((ref) =>
       (newValue: string) =>
-        ref.updateEffect(({ oldValue, orphan }) => {
+        ref.updateSomeEffect(({ oldValue, orphan }) => {
           if (oldValue != Maybe.some(newValue)) {
-            return Effect.fromMaybe(Maybe.fromNullable(newValue)).flatMap((value) =>
-              Effect.succeed(() => {
-                attributeNode.value = value
-                if (orphan) {
-                  node.setAttributeNodeNS(attributeNode)
-                  return { orphan: false, oldValue: Maybe.some(value) }
+            return Maybe.some(
+              Effect.fromMaybe(Maybe.fromNullable(newValue)).flatMap((value) =>
+                Effect.succeed(() => {
+                  attributeNode.value = value
+                  if (orphan) {
+                    node.setAttributeNodeNS(attributeNode)
+                    return { orphan: false, oldValue: Maybe.some(value) }
+                  }
+
+                  return { orphan, oldValue: Maybe.some(value) }
+                })
+              ).catchAll(() => {
+                if (!orphan) {
+                  Effect.succeed(() => {
+                    node.removeAttributeNode(attributeNode)
+                  }).as({ orphan: true, oldValue: Maybe.none })
                 }
 
-                return { orphan, oldValue: Maybe.some(value) }
+                return Effect.succeed({ orphan, oldValue: Maybe.none })
               })
-            ).catchAll(() => {
-              if (!orphan) {
-                Effect.succeed(() => {
-                  node.removeAttributeNode(attributeNode)
-                }).as({ orphan: true, oldValue: Maybe.none })
-              }
-
-              return Effect.succeed({ orphan, oldValue: Maybe.none })
-            })
+            )
           }
-          return Effect.succeed({ orphan, oldValue })
+          return Maybe.none
         })
     )
 }
@@ -620,15 +635,17 @@ function handleAttribute(
 function text(node: Node): Effect.UIO<(value: string) => Effect.UIO<void>> {
   return SynchronizedRef.make<Maybe<string>>(Maybe.none).map((ref) =>
     (newValue: string) =>
-      ref.updateEffect((oldValue) => {
+      ref.updateSomeEffect((oldValue) => {
         const value = Maybe.fromNullable(newValue)
         if (oldValue != value) {
-          return Effect.succeed(() => {
-            node.textContent = value.getOrElse("")
-          }).as(newValue).asSome()
+          return Maybe.some(
+            Effect.succeed(() => {
+              node.textContent = value.getOrElse("")
+            }).as(newValue).asSome()
+          )
         }
 
-        return Effect.succeed(oldValue)
+        return Maybe.none
       })
   )
 }
@@ -636,7 +653,7 @@ function text(node: Node): Effect.UIO<(value: string) => Effect.UIO<void>> {
 function handlers(
   fragment: DocumentFragment
 ) {
-  return ({ name: name0, path }: Template.Node): Effect<
+  return ({ name, path }: Template.Node): Effect<
     never,
     Template.MissingNodeException | Template.InvalidElementException,
     | ((
@@ -659,16 +676,18 @@ function handlers(
         node: path.reduceRight(
           Maybe.some<Node>(fragment),
           (i, childNode) => childNode.flatMap(({ childNodes }) => Maybe.fromNullable(childNodes[i]))
-        ),
-        name: name0
+        )
       })
-    ).mapError(() => new Template.MissingNodeException()).flatMap(({ name, node }) => {
+    ).mapError(() => new Template.MissingNodeException()).flatMap(({ node }) => {
       if (isNode(node)) {
         return handleAnything(node)
       }
 
       if (isElement(node)) {
-        return handleAttribute(node, name)
+        if (name.isNone()) {
+          return Effect.fail(new Template.MissingNameException())
+        }
+        return handleAttribute(node, name.value)
       }
 
       return text(node)

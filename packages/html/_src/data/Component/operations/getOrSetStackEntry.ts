@@ -19,7 +19,7 @@ export function getOrSetStackEntry(
   }).flatMap((component) =>
     component.isNone() ?
       Component.empty().flatMap((emptyComponent) =>
-        self.stack.getAndUpdateEffect((_) => Effect.succeed(() => _[index] = Maybe.some(emptyComponent)).as(_)).as(
+        self.stack.updateAndGetEffect((_) => Effect.succeed(() => _[index] = Maybe.some(emptyComponent)).as(_)).as(
           emptyComponent
         )
       ) :

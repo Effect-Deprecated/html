@@ -8,11 +8,12 @@ export function valueOf(
 ): Effect.UIO<ParentNode> {
   concreteWire(self)
 
-  return self.fragment.get().flatMap((fragment) => {
+  return self.fragment.updateSomeAndGetEffect((fragment) => {
+    console.log(fragment.childNodes.length, self.nodes.length, self.nodes)
     if (fragment.childNodes.length !== self.nodes.length) {
-      return self.fragment.updateAndGetEffect((_) => Effect.succeed(() => _.append(...self.nodes)).as(_))
+      return Maybe.some(Effect.succeed(() => fragment.append(...self.nodes)).as(fragment))
     }
 
-    return Effect.succeed(fragment)
+    return Maybe.none
   })
 }

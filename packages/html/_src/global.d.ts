@@ -19,7 +19,15 @@ import { SynchronizedRef } from "@effect/core/io/Ref/Synchronized"
 /**
  * @tsplus global
  */
+import { Logger } from "@effect/core/io/Logger"
+/**
+ * @tsplus global
+ */
 import { Layer } from "@effect/core/io/Layer"
+/**
+ * @tsplus global
+ */
+import { Stream } from "@effect/core/stream/Stream"
 /**
  * @tsplus global
  */

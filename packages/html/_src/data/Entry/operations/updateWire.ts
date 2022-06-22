@@ -1,9 +1,9 @@
 import { concreteEntry } from "@effect/html/data/Entry/operations/_internal/InternalEntry"
 
 /**
- * @tsplus fluent ets/Entry updateWithValue
+ * @tsplus fluent ets/Entry updateWire
  */
-export function updateWithValue<V>(
+export function updateWire<V>(
   self: Entry,
   index: number,
   value: V
