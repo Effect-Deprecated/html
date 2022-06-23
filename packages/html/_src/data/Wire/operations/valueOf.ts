@@ -9,7 +9,6 @@ export function valueOf(
   concreteWire(self)
 
   return self.fragment.updateSomeAndGetEffect((fragment) => {
-    console.log(fragment.childNodes.length, self.nodes.length, self.nodes)
     if (fragment.childNodes.length !== self.nodes.length) {
       return Maybe.some(Effect.succeed(() => fragment.append(...self.nodes)).as(fragment))
     }

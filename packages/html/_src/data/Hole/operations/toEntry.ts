@@ -11,9 +11,11 @@ export function toEntry(
 
   return TemplateCache.getOrElseEffect(self.template, TemplateCache.set(self.template, self.toTemplate)).flatMap((
     template
-  ) =>
-    template.updates.flatMap((updates) =>
-      Entry(self.type, self.template, template.toDocumentFragment, updates.toImmutableArray)
+  ) => {
+    const fragment = template.toDocumentFragment
+
+    return template.updates(fragment).flatMap((updates) =>
+      Entry(self.type, self.template, fragment, updates.toImmutableArray)
     )
-  )
+  })
 }

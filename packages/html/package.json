@@ -9,8 +9,8 @@
   },
   "scripts": {
     "clean": "yarn org:rimraf build tsbuildinfo dist",
-    "build-cjs": "yarn org:babel build/esm --config-file ./.babel.cjs.json --out-dir build/cjs --out-file-extension .js --source-maps",
-    "build-mjs": "yarn org:babel build/esm --config-file ./.babel.mjs.json --out-dir build/mjs --out-file-extension .mjs --source-maps",
+    "build-cjs": "yarn org:babel build/esm --config-file ./.babel.cjs.json --out-dir build/cjs --out-file-extension .js --source-maps inline",
+    "build-mjs": "yarn org:babel build/esm --config-file ./.babel.mjs.json --out-dir build/mjs --out-file-extension .mjs --source-maps inline",
     "build-post": "yarn org:build-utils pack-v3",
     "build-pack": "yarn org:tsc -b tsconfig.json && yarn org:concurrently \"yarn build-cjs\" \"yarn build-mjs\" && yarn build-post",
     "lint": "yarn org:eslint . --ext .ts,.tsx",
@@ -43,11 +43,7 @@
     "@tsplus/stdlib": "0.1.8"
   },
   "devDependencies": {
-    "@types/node": "18.0.0",
-    "@types/webpack": "5.28.0",
-    "ts-loader": "9.3.0",
-    "webpack": "5.73.0",
-    "webpack-cli": "4.10.0"
+    "@types/node": "18.0.0"
   },
   "tsplus": {
     "typeDir": "./build/dts"

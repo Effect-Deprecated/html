@@ -85,10 +85,9 @@ export function render<A extends Element, R, E, B extends (Hole | HTMLOrSVGEleme
             // (wires are basically persistent fragments facades with special behavior)
             return (Wire.isWire(wire.value) ?
               wire.value.valueOf :
-              Effect.succeed(wire.value.valueOf() as Node)).flatMap((node) => {
-                console.log(where, node)
-                return Effect.succeed(() => where.replaceChildren(node))
-              }).as(where)
+              Effect.succeed(wire.value.valueOf() as Node)).flatMap((node) =>
+                Effect.succeed(() => where.replaceChildren(node))
+              ).as(where)
           }
           return Effect.succeed(where)
         }

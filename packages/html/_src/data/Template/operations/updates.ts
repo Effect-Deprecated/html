@@ -369,7 +369,7 @@ function anyContent(
                   }).as(_)
                 ).catchAll(() => Effect.succeed(() => document.createTextNode(String(newValue)))).asSome()
               ).flatMap((_) => Effect.fromMaybe(_).mapError(() => new Template.NoTextNodeException())).flatMap((text) =>
-                nodesRef.updateEffect((nodes) => diff(comment, nodes, [text]))
+                nodesRef.updateAndGetEffect((nodes) => diff(comment, nodes, [text]))
               ).as(newValue).asSome()
             )
           }
@@ -695,10 +695,11 @@ function handlers(
 }
 
 /**
- * @tsplus getter ets/Template updates
+ * @tsplus fluent ets/Template updates
  */
 export function updates(
-  self: Template
+  self: Template,
+  fragment: DocumentFragment
 ): Effect<
   never,
   Template.InvalidElementException | Template.MissingNodeException,
@@ -721,5 +722,5 @@ export function updates(
 > {
   concreteTemplate(self)
   // relate an update handler per each node that needs one
-  return Chunk.from(self.nodes).mapEffect(handlers(self.toDocumentFragment))
+  return Chunk.from(self.nodes).mapEffect(handlers(fragment))
 }

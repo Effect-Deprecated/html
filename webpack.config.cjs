@@ -4,7 +4,7 @@ module.exports = {
   experiments: {
     outputModule: true
   },
-  entry: path.resolve(__dirname, "./_src/render.ts"),
+  entry: path.resolve(__dirname, "./packages/html/_src/render.ts"),
   module: {
     rules: [
       {
@@ -31,7 +31,7 @@ module.exports = {
   },
   devtool: "inline-source-map",
   output: {
-    path: path.resolve(__dirname, "./build/web"),
+    path: path.resolve(__dirname, "./packages/html/build/web"),
     filename: "index.js",
     library: {
       type: "module"
