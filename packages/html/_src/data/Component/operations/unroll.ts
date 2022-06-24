@@ -14,23 +14,24 @@ export function unroll(
   Template.InvalidElementException | Template.MissingNodeException,
   Wire | ChildNode | ParentNode
 > {
-  return Effect.Do()
-    .bind("values", () => hole.values)
-    .tap(({ values }) => self.unrollValues(values))
-    .bind(
-      "entry",
-      () =>
-        self.entry.flatMap((entry) =>
-          entry.isNone() || !(entry.value == hole) ?
-            self.setEntryEffect(hole.toEntry) :
-            Effect.succeed(() => entry.value)
+  return self.entry.flatMap((entry) =>
+    entry.isNone() || !(entry.value == hole) ?
+      self.setEntryEffect(hole.toEntry) :
+      Effect.succeed(() => entry.value)
+  )
+    .tap((entry) =>
+      hole.values.take(1).tap((_) =>
+        self.unrollValues(_).map((_) => _.collect(identity)).flatMap((updates) =>
+          updates.isEmpty ?
+            Effect.unit :
+            hole.updateValuesEffect((_) => updates.mapEffectDiscard(identity).as(_))
         )
-    )
-    .tap(({ entry, values }) =>
-      Chunk.from(values).zipWithIndex.mapEffectDiscard((tp) => {
-        const { tuple: [value, index] } = tp
+      ).map(Chunk.from).tap((_) =>
+        _.zipWithIndex.mapEffectDiscard((tp) => {
+          const { tuple: [value, index] } = tp
 
-        return entry.updateWithValue(index, value)
-      })
-    ).flatMap(({ entry }) => entry.toWire)
+          return entry.updateWithValue(index, value)
+        })
+      ).runDrain()
+    ).flatMap((entry) => entry.toWire)
 }

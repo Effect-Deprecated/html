@@ -19,6 +19,14 @@ import { SynchronizedRef } from "@effect/core/io/Ref/Synchronized"
 /**
  * @tsplus global
  */
+import { SubscriptionRef } from "@effect/core/stream/SubscriptionRef"
+/**
+ * @tsplus global
+ */
+import { Fiber } from "@effect/core/io/Fiber"
+/**
+ * @tsplus global
+ */
 import { Logger } from "@effect/core/io/Logger"
 /**
  * @tsplus global

@@ -6,7 +6,7 @@ export class InternalHole implements Hole {
   constructor(
     readonly type: string,
     readonly template: TemplateStringsArray,
-    readonly values: SynchronizedRef<Array<Hole | Array<unknown> | unknown>>
+    readonly values: SubscriptionRef<Array<Hole | Array<unknown> | unknown>>
   ) {}
 }
 

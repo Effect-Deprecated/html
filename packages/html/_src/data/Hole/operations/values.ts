@@ -3,7 +3,7 @@ import { concreteHole } from "@effect/html/data/Hole/operations/_internal/Intern
 /**
  * @tsplus getter ets/Hole values
  */
-export function values(self: Hole): Effect.UIO<Array<unknown>> {
+export function values(self: Hole): Stream.UIO<Array<unknown>> {
   concreteHole(self)
-  return self.values.get()
+  return self.values.changes
 }

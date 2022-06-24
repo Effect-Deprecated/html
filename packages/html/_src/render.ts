@@ -30,7 +30,7 @@ function tag(
     // non keyed operations are recognized as instance of Hole
     // during the "unroll", recursively resolved and updated
     (template: TemplateStringsArray, ...values: Array<unknown>): Effect.UIO<Hole> =>
-      SynchronizedRef.make(values).map((ref) => Hole(type, template, ref)),
+      SubscriptionRef.make(values).map((ref) => Hole(type, template, ref)),
     {
       // keyed operations need a reference object, usually the parent node
       // which is showing keyed results, and optionally a unique id per each
@@ -57,7 +57,7 @@ function tag(
       // this might return the single created node, or a fragment with all
       // nodes present at the root level and, of course, their child nodes
       node: (template: TemplateStringsArray, ...values: Array<unknown>) =>
-        Component.empty().zip(SynchronizedRef.make(values).map((ref) => Hole(type, template, ref))).flatMap((tp) => {
+        Component.empty().zip(SubscriptionRef.make(values).map((ref) => Hole(type, template, ref))).flatMap((tp) => {
           const { tuple: [component, hole] } = tp
 
           return component.unroll(hole).flatMap((_) =>
