@@ -2,15 +2,18 @@
 // with a `for(ref[, id])` and a `node` tag too
 
 interface Tag {
-  (template: TemplateStringsArray, ...values: Array<unknown>): Effect<never, never, Hole>
+  <A extends Array<unknown>>(
+    template: TemplateStringsArray,
+    ...values: A
+  ): Effect<ExtractR<A>, ExtractE<A>, Hole>
   for(
     ref: object,
     id: unknown
-  ): (
+  ): <R, E, A>(
     hole: Hole
   ) => Effect<
-    TemplateCache | KeyedCache,
-    Template.InvalidElementException | Template.MissingNodeException,
+    TemplateCache | KeyedCache | R,
+    E | Template.InvalidElementException | Template.MissingNodeException,
     Wire | ParentNode | ChildNode
   >
   node: (
@@ -23,14 +26,30 @@ interface Tag {
   >
 }
 
+type ExtractRD<F> = F extends Effect<infer R, any, any> ? R : never
+type ExtractR<A extends Array<unknown>> = ExtractRD<
+  {
+    [k in keyof A]: unknown extends A[k] ? never : A[k]
+  }[number]
+>
+type ExtractED<F> = F extends Effect<any, infer E, any> ? E : never
+type ExtractE<A extends Array<unknown>> = ExtractED<
+  {
+    [k in keyof A]: unknown extends A[k] ? never : A[k]
+  }[number]
+>
+
 function tag(
   type: "html" | "svg"
 ): Tag {
   return Object.assign(
     // non keyed operations are recognized as instance of Hole
     // during the "unroll", recursively resolved and updated
-    (template: TemplateStringsArray, ...values: Array<unknown>): Effect.UIO<Hole> =>
-      SubscriptionRef.make(values).map((ref) => Hole(type, template, ref)),
+    <A extends Array<unknown>>(
+      template: TemplateStringsArray,
+      ...values: A
+    ): Effect<ExtractR<A>, ExtractE<A>, Hole> =>
+      SubscriptionRef.make<Array<unknown>>(values).map((ref) => Hole(type, template, ref)),
     {
       // keyed operations need a reference object, usually the parent node
       // which is showing keyed results, and optionally a unique id per each
@@ -39,13 +58,7 @@ function tag(
       for(
         ref: object,
         id: unknown
-      ): (
-        hole: Hole
-      ) => Effect<
-        TemplateCache | KeyedCache,
-        Template.InvalidElementException | Template.MissingNodeException,
-        Wire | ParentNode | ChildNode
-      > {
+      ) {
         return (hole: Hole) =>
           KeyedCache.getOrElseEffect(ref, KeyedCache.set(ref, HashMap.empty())).flatMap((memo) =>
             Effect.succeed(memo.get(id)).flatMap((fixed) =>
@@ -56,8 +69,10 @@ function tag(
       // it is possible to create one-off content out of the box via node tag
       // this might return the single created node, or a fragment with all
       // nodes present at the root level and, of course, their child nodes
-      node: (template: TemplateStringsArray, ...values: Array<unknown>) =>
-        Component.empty().zip(SubscriptionRef.make(values).map((ref) => Hole(type, template, ref))).flatMap((tp) => {
+      node: <A extends Array<unknown>>(template: TemplateStringsArray, ...values: A) =>
+        Component.empty().zip(
+          SubscriptionRef.make<Array<unknown>>(values).map((ref) => Hole(type, template, ref))
+        ).flatMap((tp) => {
           const { tuple: [component, hole] } = tp
 
           return component.unroll(hole).flatMap((_) =>

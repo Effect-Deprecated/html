@@ -672,13 +672,11 @@ function handlers(
     | ((newValue: boolean) => Effect.UIO<void>)
   > =>
     Effect.fromMaybe(
-      Maybe.struct({
-        node: path.reduceRight(
-          Maybe.some<Node>(fragment),
-          (i, childNode) => childNode.flatMap(({ childNodes }) => Maybe.fromNullable(childNodes[i]))
-        )
-      })
-    ).mapError(() => new Template.MissingNodeException()).flatMap(({ node }) => {
+      path.reduceRight(
+        Maybe.some<Node>(fragment),
+        (i, childNode) => childNode.flatMap(({ childNodes }) => Maybe.fromNullable(childNodes[i]))
+      )
+    ).mapError(() => new Template.MissingNodeException()).flatMap((node) => {
       if (isNode(node)) {
         return handleAnything(node)
       }
