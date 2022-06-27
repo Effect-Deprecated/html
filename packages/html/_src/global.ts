@@ -4,18 +4,10 @@
 import "@effect/core"
 import "@tsplus/stdlib/global"
 
-// =============================================================================
-// @tsplus/stdlib
-// =============================================================================
-
 /**
  * @tsplus global
  */
 import { Ref } from "@effect/core/io/Ref"
-/**
- * @tsplus global
- */
-import { SynchronizedRef } from "@effect/core/io/Ref/Synchronized"
 /**
  * @tsplus global
  */
@@ -40,10 +32,6 @@ import { Stream } from "@effect/core/stream/Stream"
  * @tsplus global
  */
 import { Effect } from "@effect/core/io/Effect"
-/**
- * @tsplus global
- */
-import { Has } from "@tsplus/stdlib/service/Has"
 /**
  * @tsplus global
  */
@@ -92,3 +80,7 @@ import { Template } from "@effect/html/data/Template"
  * @tsplus global
  */
 import { Wire } from "@effect/html/data/Wire"
+
+// =============================================================================
+// @tsplus/stdlib
+// =============================================================================

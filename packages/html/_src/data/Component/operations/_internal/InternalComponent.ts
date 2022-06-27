@@ -4,7 +4,7 @@ export class InternalComponent implements Component {
   readonly [ComponentSym]: ComponentSym = ComponentSym
 
   constructor(
-    readonly stack: SynchronizedRef<Array<Maybe<Component>>>,
+    readonly stack: Ref.Synchronized<Array<Maybe<Component>>>,
     readonly entry: Ref<Maybe<Entry>>,
     readonly wire: Ref<Maybe<Wire | HTMLOrSVGElement | ParentNode | ChildNode>>
   ) {}

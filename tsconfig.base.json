@@ -62,6 +62,6 @@
         "lib"
     ],
     "files": [
-        "./packages/html/_src/global.d.ts"
+        "./packages/html/_src/global.ts"
     ]
 }

@@ -4,7 +4,7 @@ import { InternalComponent } from "@effect/html/data/Component/operations/_inter
  * @tsplus static ets/Component/Ops __call
  */
 export function make(
-  stack: SynchronizedRef<Array<Maybe<Component>>>,
+  stack: Ref.Synchronized<Array<Maybe<Component>>>,
   entry: Ref<Maybe<Entry>>,
   wire: Ref<Maybe<Wire | HTMLOrSVGElement>>
 ): Component {

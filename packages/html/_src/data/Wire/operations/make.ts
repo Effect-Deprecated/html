@@ -6,7 +6,7 @@ import { InternalWire } from "@effect/html/data/Wire/operations/_internal/Intern
 export function make(
   fragment: ParentNode
 ): Effect.UIO<Wire> {
-  return SynchronizedRef.make(fragment).map((_) =>
+  return Ref.Synchronized.make(fragment).map((_) =>
     new InternalWire(
       _,
       Chunk.from(fragment.childNodes),

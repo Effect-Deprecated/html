@@ -5,7 +5,7 @@ export class InternalWeakCache<K extends object, V> implements WeakCache<K, V> {
   readonly [_K]!: () => K
   readonly [_V]!: () => V
 
-  constructor(readonly ref: SynchronizedRef<WeakMap<K, V>>) {}
+  constructor(readonly ref: Ref.Synchronized<WeakMap<K, V>>) {}
 }
 
 /**

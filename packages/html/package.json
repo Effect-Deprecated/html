@@ -39,8 +39,8 @@
     }
   },
   "dependencies": {
-    "@effect/core": "0.0.5",
-    "@tsplus/stdlib": "0.1.8"
+    "@effect/core": "0.0.6",
+    "@tsplus/stdlib": "0.2.2"
   },
   "devDependencies": {
     "@types/node": "18.0.0"

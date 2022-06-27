@@ -1,4 +1,3 @@
-import { SynchronizedRef } from "@effect/core/io/Ref/Synchronized"
 import { concreteTemplate } from "@effect/html/data/Template/operations/_internal/InternalTemplate"
 
 export function whileDiscard<Z>(
@@ -327,9 +326,9 @@ function diff(comment: Node, oldNodes: Array<Node | Wire>, newNodes: Array<Node 
 }
 
 function anyContent(
-  oldValueRef: SynchronizedRef<Maybe<unknown>>,
-  textRef: SynchronizedRef<Maybe<Text>>,
-  nodesRef: SynchronizedRef<Array<Node | Wire>>,
+  oldValueRef: Ref.Synchronized<Maybe<unknown>>,
+  textRef: Ref.Synchronized<Maybe<Text>>,
+  nodesRef: Ref.Synchronized<Array<Node | Wire>>,
   comment: Node,
   newValue: unknown
 ): Effect<
@@ -436,9 +435,9 @@ function anyContent(
 
 function handleAnything(comment: Node) {
   return Effect.struct({
-    oldValue: SynchronizedRef.make<Maybe<unknown>>(Maybe.none),
-    text: SynchronizedRef.make<Maybe<Text>>(Maybe.none),
-    nodes: SynchronizedRef.make<Array<Node | Wire>>(Array.empty)
+    oldValue: Ref.Synchronized.make<Maybe<unknown>>(Maybe.none),
+    text: Ref.Synchronized.make<Maybe<Text>>(Maybe.none),
+    nodes: Ref.Synchronized.make<Array<Node | Wire>>(Array.empty)
   })
     .map(({ nodes, oldValue, text }) => (newValue: unknown) => anyContent(oldValue, text, nodes, comment, newValue))
 }
@@ -450,7 +449,7 @@ function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => E
     type = lower.slice(2)
   }
 
-  return SynchronizedRef.make<Maybe<EventListenerOrEventListenerObject>>(Maybe.none).map((ref) =>
+  return Ref.Synchronized.make<Maybe<EventListenerOrEventListenerObject>>(Maybe.none).map((ref) =>
     (newValue: unknown) =>
       ref.updateSomeEffect((oldValue) => {
         const info = Array.isArray(newValue) ? newValue : [newValue, false]
@@ -471,7 +470,7 @@ function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => E
 
 function attribute(node: Element, name: string): Effect.UIO<(value: string) => Effect.UIO<void>> {
   const attributeNode = document.createAttributeNS(null, name)
-  return SynchronizedRef.make<{ orphan: boolean; oldValue: Maybe<string> }>({ orphan: true, oldValue: Maybe.none })
+  return Ref.Synchronized.make<{ orphan: boolean; oldValue: Maybe<string> }>({ orphan: true, oldValue: Maybe.none })
     .map((ref) =>
       (newValue: string) =>
         ref.updateSomeEffect(({ oldValue, orphan }) => {
@@ -523,7 +522,7 @@ function handleAttribute(
 }
 
 function text(node: Node): Effect.UIO<(value: string) => Effect.UIO<void>> {
-  return SynchronizedRef.make<Maybe<string>>(Maybe.none).map((ref) =>
+  return Ref.Synchronized.make<Maybe<string>>(Maybe.none).map((ref) =>
     (newValue: string) =>
       ref.updateSomeEffect((oldValue) => {
         const value = Maybe.fromNullable(newValue)

@@ -9,5 +9,5 @@ export function make(
   content: ParentNode,
   updates: ImmutableArray<(u: any) => Effect<never, any, void>>
 ): Effect.UIO<Entry> {
-  return SynchronizedRef.make(Maybe.none).map((wire) => new InternalEntry(type, template, content, updates, wire))
+  return Ref.Synchronized.make(Maybe.none).map((wire) => new InternalEntry(type, template, content, updates, wire))
 }
