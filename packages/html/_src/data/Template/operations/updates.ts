@@ -256,7 +256,7 @@ function synchronize(
         // similar node will be found later on, to go back to the fast path
         return Effect.struct({
           node: get(Maybe.fromNullable(b[s.bStart]), 1),
-          childNode: get(Maybe.fromNullable(b[s.aStart]), 1)
+          childNode: get(Maybe.fromNullable(b[s.aStart]), -1)
         }).flatMap(({ childNode, node }) =>
           Effect.succeed(() =>
             parentNode.replaceChild(
@@ -265,7 +265,7 @@ function synchronize(
             )
           )
         ).as(() => {
-          s.bStart = s.bStart + 2
+          s.bStart = s.bStart + 1
           s.aStart = s.aStart + 1
 
           return s
@@ -443,62 +443,6 @@ function handleAnything(comment: Node) {
     .map(({ nodes, oldValue, text }) => (newValue: unknown) => anyContent(oldValue, text, nodes, comment, newValue))
 }
 
-function boolean(node: Element, key: string, oldValue: boolean): Effect.UIO<(newValue: boolean) => Effect.UIO<void>> {
-  return SynchronizedRef.make(oldValue).map((ref) =>
-    (newValue: unknown): Effect.UIO<void> =>
-      ref.updateSomeEffect((oldValue) => {
-        if (oldValue !== !!newValue) {
-          // when IE won't be around anymore ...
-          // node.toggleAttribute(key, oldValue = !!newValue);
-          return Maybe.some(
-            Effect.fromMaybe(Maybe.fromPredicate(newValue, (_) => !!_)).flatMap((val) =>
-              Effect.succeed(() => node.setAttribute(key, "")).as(!!val)
-            ).catchAll(() => Effect.succeed(() => node.removeAttribute(key)).as(false))
-          )
-        }
-
-        return Maybe.none
-      })
-  )
-}
-
-function data(node: Element) {
-  if (isHTMLOrSVGElement(node)) {
-    return Effect.succeed(() =>
-      (values: object): Effect.UIO<void> =>
-        Effect.succeed(() => {
-          for (const key in values) {
-            const value = values[key]
-            if (value == null) {
-              delete node.dataset[key]
-            } else {
-              node.dataset[key] = value
-            }
-          }
-        })
-    )
-  }
-  return Effect.fail(new Template.InvalidElementException())
-}
-
-function setter(
-  node: Element,
-  key: string
-): Effect.IO<
-  Template.InvalidElementException,
-  | ((value: unknown) => Effect.UIO<void>)
-  | ((values: Collection<string>) => Effect.UIO<void>)
-> {
-  return key === "dataset" ?
-    data(node) :
-    Effect.succeed(() =>
-      (value: unknown): Effect.UIO<void> =>
-        Effect.succeed(() => {
-          node[key] = value
-        })
-    )
-}
-
 function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => Effect.UIO<void>> {
   let lower: string
   let type = name.slice(2)
@@ -521,38 +465,6 @@ function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => E
         }
 
         return Maybe.none
-      })
-  )
-}
-
-function ref(node: Element): Effect.UIO<(value: unknown) => Effect.UIO<void>> {
-  return SynchronizedRef.make<Maybe<Function>>(Maybe.none).map((ref) =>
-    (value: unknown) =>
-      ref.updateSomeEffect((oldValue) => {
-        if (oldValue != Maybe.some(value)) {
-          if (typeof value === "function") {
-            return Maybe.some(Effect.succeed(() => value(node)).as(value).asSome())
-          }
-        }
-
-        return Maybe.none
-      })
-  )
-}
-
-function aria(node: Element): Effect.UIO<(values: object) => Effect.UIO<void>> {
-  return Effect.succeed(() =>
-    (values: object) =>
-      Effect.succeed(() => {
-        for (const key in values) {
-          const name = key === "role" ? key : `aria-${key}`
-          const value = values[key]
-          if (value == null) {
-            node.removeAttribute(name)
-          } else {
-            node.setAttribute(name, value)
-          }
-        }
       })
   )
 }
@@ -592,14 +504,7 @@ function attribute(node: Element, name: string): Effect.UIO<(value: string) => E
 }
 
 // attributes can be:
-//  * ref=${...}      for hooks and other purposes
-//  * aria=${...}     for aria attributes
-//  * ?boolean=${...} for boolean attributes
-//  * .dataset=${...} for dataset related attributes
-//  * .setter=${...}  for Custom Elements setters or nodes with setters
-//                    such as buttons, details, options, select, etc
 //  * @event=${...}   to explicitly handle event listeners
-//  * onevent=${...}  to automatically handle event listeners
 //  * generic=${...}  to handle an attribute just like an attribute
 function handleAttribute(
   node: Element,
@@ -607,26 +512,11 @@ function handleAttribute(
 ): Effect<
   never,
   Template.InvalidElementException,
-  | ((newValue: object) => Effect.UIO<void>)
+  | ((newValue: unknown) => Effect.UIO<void>)
   | ((newValue: string) => Effect.UIO<void>)
-  | ((newValue: boolean) => Effect.UIO<void>)
 > {
-  switch (name[0]) {
-    case "?":
-      return boolean(node, name.slice(1), false)
-    case ".":
-      return setter(node, name.slice(1))
-    case "@":
-      return event(node, "on" + name.slice(1))
-    case "o":
-      if (name[1] === "n") return event(node, name)
-  }
-
-  switch (name) {
-    case "ref":
-      return ref(node)
-    case "aria":
-      return aria(node)
+  if (name[0] === "0" && name[1] === "n") {
+    return event(node, name)
   }
 
   return attribute(node, name)
@@ -667,9 +557,8 @@ function handlers(
       | Template.NoTextNodeException,
       void
     >)
-    | ((newValue: object) => Effect.UIO<void>)
+    | ((newValue: unknown) => Effect.UIO<void>)
     | ((newValue: string) => Effect.UIO<void>)
-    | ((newValue: boolean) => Effect.UIO<void>)
   > =>
     Effect.fromMaybe(
       path.reduceRight(
@@ -713,9 +602,8 @@ export function updates(
       | Template.NoTextNodeException,
       void
     >)
-    | ((newValue: object) => Effect.UIO<void>)
+    | ((newValue: unknown) => Effect.UIO<void>)
     | ((newValue: string) => Effect.UIO<void>)
-    | ((newValue: boolean) => Effect.UIO<void>)
   >
 > {
   concreteTemplate(self)

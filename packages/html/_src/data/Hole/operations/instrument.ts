@@ -13,7 +13,7 @@ const holes = /[\x01\x02]/g
  *
  * @tsplus getter ets/Hole instrument
  */
-export function mapTemplate(
+export function instrument(
   self: Hole
 ): string {
   concreteHole(self)

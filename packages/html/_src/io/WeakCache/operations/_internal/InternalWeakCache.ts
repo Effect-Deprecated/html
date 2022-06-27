@@ -4,6 +4,7 @@ export class InternalWeakCache<K extends object, V> implements WeakCache<K, V> {
   readonly [WeakCacheSym]: WeakCacheSym = WeakCacheSym
   readonly [_K]!: () => K
   readonly [_V]!: () => V
+
   constructor(readonly ref: SynchronizedRef<WeakMap<K, V>>) {}
 }
 

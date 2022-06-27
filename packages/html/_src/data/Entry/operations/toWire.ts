@@ -16,9 +16,7 @@ export function toWire(
           return Maybe.some(Effect.succeed(self.content.lastChild).map(Maybe.some))
         }
 
-        if (self.content.lastChild != null) {
-          return Maybe.some(Effect.succeed(self.content).map(Maybe.some))
-        }
+        return Maybe.some(Effect.succeed(self.content).map(Maybe.some))
       }
 
       return Maybe.some(Wire(self.content).map(Maybe.some))

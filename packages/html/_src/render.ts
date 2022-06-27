@@ -109,7 +109,6 @@ export function render<A extends Element, R, E, B extends (Hole | HTMLOrSVGEleme
       )
     )
   )
-    .provideSomeLayer(TemplateCache.live + ComponentCache.live + KeyedCache.live)
 }
 
 export const html = tag("html")
