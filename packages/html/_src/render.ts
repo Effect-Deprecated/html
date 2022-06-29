@@ -8,13 +8,10 @@ interface Tag {
   for(
     ref: object,
     id: unknown
-  ): (
-    hole: Hole
-  ) => Effect<
-    never,
-    Template.InvalidElementException | Template.MissingNodeException,
-    Wire | Node
-  >
+  ): <A extends Array<Placeholder<any>>>(
+    template: TemplateStringsArray,
+    ...placeholders: A
+  ) => Effect<Placeholder.Env<A>, never, Node | Wire | Hole>
   node: <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...values: A
@@ -32,7 +29,10 @@ function tag(
     object,
     HashMap<
       unknown,
-      (hole: Hole) => Effect<never, Template.InvalidElementException | Template.MissingNodeException, Wire>
+      <A extends Array<Placeholder<any>>>(
+        template: TemplateStringsArray,
+        placeholders: A
+      ) => Effect<Placeholder.Env<A>, never, Hole>
     >
   >()
 
@@ -51,17 +51,16 @@ function tag(
       for(
         ref: object,
         id: unknown
-      ): (
-        hole: Hole
-      ) => Effect<
-        never,
-        Template.InvalidElementException | Template.MissingNodeException,
-        Wire | Node
-      > {
-        return (hole: Hole) =>
+      ) {
+        return <A extends Array<Placeholder<any>>>(
+          template: TemplateStringsArray,
+          ...placeholders: A
+        ): Effect<Placeholder.Env<A>, never, Node | Wire | Hole> =>
           keyed.getOrElseEffect(ref, keyed.set(ref, HashMap.empty())).flatMap((memo) =>
             Effect.succeed(memo.get(id)).flatMap((fixed) =>
-              fixed.isNone() ? Component.empty().flatMap((_) => _.fixed(hole)) : fixed.value(hole)
+              fixed.isNone() ?
+                Component.empty().flatMap((_) => _.fixed(template, placeholders)) :
+                fixed.value(template, placeholders)
             )
           )
       },
