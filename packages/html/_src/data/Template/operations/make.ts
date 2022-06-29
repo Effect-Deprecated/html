@@ -1,7 +1,7 @@
 import { InternalTemplate } from "@effect/html/data/Template/operations/_internal/InternalTemplate"
 
 /**
- * @tsplus static ets/Template/Ops __call
+ * @tsplus static effect/html/Template/Ops __call
  */
 export function make(
   content: DocumentFragment,

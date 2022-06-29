@@ -3,15 +3,15 @@
  * related to each interpolation value, or null, if the render
  * was conditional and the value is not special (Array or Hole)
  *
- * @tsplus fluent ets/Component unrollValues
+ * @tsplus fluent effect/html/Component unrollValues
  */
 export function unrollValues(
   self: Component,
-  values: Array<unknown>
-): Effect<any, any, Chunk<Maybe<Effect.UIO<void>>>> {
+  values: Chunk<Placeholder.Value>
+): Effect.UIO<Chunk<Component.Values>> {
   return Chunk.from(values).zipWithIndex.mapEffect((tp) => {
     const { tuple: [value, index] } = tp
 
-    return self.unrollValue(value, index, values)
+    return self.unrollValue(value, index)
   })
 }

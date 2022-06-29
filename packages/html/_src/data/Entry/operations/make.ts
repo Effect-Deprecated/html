@@ -1,13 +1,13 @@
 import { InternalEntry } from "@effect/html/data/Entry/operations/_internal/InternalEntry"
 
 /**
- * @tsplus static ets/Entry/Ops __call
+ * @tsplus static effect/html/Entry/Ops __call
  */
-export function make(
+export function make<R, E, A extends Event>(
   type: string,
   template: TemplateStringsArray,
   content: ParentNode,
-  updates: ImmutableArray<(u: any) => Effect<never, any, void>>
+  updates: ImmutableArray<Template.Update>
 ): Effect.UIO<Entry> {
   return Ref.Synchronized.make(Maybe.none).map((wire) => new InternalEntry(type, template, content, updates, wire))
 }

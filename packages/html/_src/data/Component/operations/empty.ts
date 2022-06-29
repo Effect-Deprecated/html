@@ -1,7 +1,7 @@
 import { InternalComponent } from "@effect/html/data/Component/operations/_internal/InternalComponent"
 
 /**
- * @tsplus static ets/Component/Ops empty
+ * @tsplus static effect/html/Component/Ops empty
  */
 export function empty(): Effect.UIO<Component> {
   return Effect.struct({

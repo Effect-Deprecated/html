@@ -19,6 +19,12 @@ export const TemplateSym = Symbol.for("@effect/html/data/Template")
 export type TemplateSym = typeof TemplateSym
 
 export declare namespace Template {
+  export type Update =
+    | ((value: number) => Effect.UIO<void>)
+    | ((value: string) => Effect.UIO<void>)
+    | ((value: EventListenerOrEventListenerObject) => Effect.UIO<void>)
+    | ((value: boolean) => Effect.UIO<void>)
+    | ((value: Component.Values) => Effect.UIO<void>)
   export interface Node {
     type: "node" | "text" | "attr"
     path: Chunk<number>
@@ -33,14 +39,14 @@ export declare namespace Template {
 }
 
 /**
- * @tsplus type ets/Template
+ * @tsplus type effect/html/Template
  */
 export interface Template {
   readonly [TemplateSym]: TemplateSym
 }
 
 /**
- * @tsplus type ets/Template/Ops
+ * @tsplus type effect/html/Template/Ops
  */
 export interface TemplateOps {
   $: TemplateAspects
@@ -62,6 +68,6 @@ export const Template: TemplateOps = {
 }
 
 /**
- * @tsplus type ets/Template/Aspects
+ * @tsplus type effect/html/Template/Aspects
  */
 export interface TemplateAspects {}

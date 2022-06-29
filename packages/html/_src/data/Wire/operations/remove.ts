@@ -1,7 +1,7 @@
 import { concreteWire } from "@effect/html/data/Wire/operations/_internal/InternalWire"
 
 /**
- * @tsplus getter ets/Wire remove
+ * @tsplus getter effect/html/Wire remove
  */
 export function remove(
   self: Wire

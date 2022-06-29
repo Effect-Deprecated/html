@@ -21,7 +21,7 @@ const textOnly = /^(?:textarea|script|style|title|plaintext|xmp)$/
  * Each unique template becomes a fragment, cloned once per each other
  * operation based on the same template, i.e. data => html`<p>${data}</p>`
  *
- * @tsplus getter ets/Hole toTemplate
+ * @tsplus getter effect/html/Hole toTemplate
  */
 export function toTemplate(
   self: Hole

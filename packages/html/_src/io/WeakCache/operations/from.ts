@@ -1,10 +1,10 @@
 import { InternalWeakCache } from "@effect/html/io/WeakCache/operations/_internal/InternalWeakCache"
 
 /**
- * @tsplus static ets/WeakCache/Ops from
+ * @tsplus static effect/html/WeakCache/Ops from
  */
 export function from<K extends object, V>(
   entries: Collection<Tuple<[K, V]>>
-): Effect.UIO<WeakCache<K, V>> {
-  return Ref.Synchronized.make(new WeakMap(entries.map((_) => _.toNative))).map((_) => new InternalWeakCache(_))
+): WeakCache<K, V> {
+  return new InternalWeakCache(Ref.Synchronized.unsafeMake(new WeakMap(entries.map((_) => _.toNative))))
 }

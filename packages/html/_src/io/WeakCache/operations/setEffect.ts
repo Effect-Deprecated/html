@@ -1,7 +1,7 @@
 import { concreteWeakCache } from "@effect/html/io/WeakCache/operations/_internal/InternalWeakCache"
 
 /**
- * @tsplus fluent ets/WeakCache setEffect
+ * @tsplus fluent effect/html/WeakCache setEffect
  */
 export function setEffect<K extends object, V, R, E>(self: WeakCache<K, V>, k: K, v: Effect<R, E, V>): Effect<R, E, V> {
   concreteWeakCache(self)

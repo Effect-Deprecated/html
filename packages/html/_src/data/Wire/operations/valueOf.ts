@@ -1,7 +1,7 @@
 import { concreteWire } from "@effect/html/data/Wire/operations/_internal/InternalWire"
 
 /**
- * @tsplus getter ets/Wire valueOf
+ * @tsplus getter effect/html/Wire valueOf
  */
 export function valueOf(
   self: Wire

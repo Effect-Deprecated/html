@@ -1,7 +1,7 @@
 import { InternalComponent } from "@effect/html/data/Component/operations/_internal/InternalComponent"
 
 /**
- * @tsplus static ets/Component/Ops __call
+ * @tsplus static effect/html/Component/Ops __call
  */
 export function make(
   stack: Ref.Synchronized<Array<Maybe<Component>>>,

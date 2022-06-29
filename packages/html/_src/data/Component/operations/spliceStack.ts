@@ -1,7 +1,7 @@
 import { concreteComponent } from "@effect/html/data/Component/operations/_internal/InternalComponent"
 
 /**
- * @tsplus fluent ets/Component spliceStack
+ * @tsplus fluent effect/html/Component spliceStack
  */
 export function spliceStack(
   self: Component,

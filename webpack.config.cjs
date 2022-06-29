@@ -4,7 +4,7 @@ module.exports = {
   experiments: {
     outputModule: true
   },
-  entry: path.resolve(__dirname, "./packages/html/_src/render.ts"),
+  entry: path.resolve(__dirname, "./packages/html/_src/index.ts"),
   module: {
     rules: [
       {
@@ -12,6 +12,7 @@ module.exports = {
         loader: "ts-loader",
         exclude: /node_modules/,
         options: {
+          configFile: path.resolve(__dirname, "./packages/html/tsconfig.build.json"),
           compilerOptions: {
             declarationDir: "build/dts"
           }

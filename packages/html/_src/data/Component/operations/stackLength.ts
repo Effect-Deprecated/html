@@ -1,7 +1,7 @@
 import { concreteComponent } from "@effect/html/data/Component/operations/_internal/InternalComponent"
 
 /**
- * @tsplus getter ets/Component stackLength
+ * @tsplus getter effect/html/Component stackLength
  */
 export function stackLength(
   self: Component

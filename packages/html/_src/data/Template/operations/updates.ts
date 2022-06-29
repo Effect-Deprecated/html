@@ -21,10 +21,6 @@ function isNode(u: unknown): u is Node {
   return u instanceof Node
 }
 
-function isHTMLOrSVGElement(u: unknown): u is HTMLOrSVGElement {
-  return u instanceof HTMLElement || u instanceof SVGElement
-}
-
 function isElement(u: unknown): u is Element {
   return u instanceof Element
 }
@@ -63,9 +59,7 @@ function synchronize(
     operation: number
   ) => Effect<never, Wire.NoFirstChildException | Wire.NoLastChildException, Node>,
   before: Node
-): Effect<
-  never,
-  Template.NoNextSiblingException | Wire.NoFirstChildException | Wire.NoLastChildException,
+): Effect.UIO<
   Array<Node | Wire>
 > {
   return whileDiscard({
@@ -287,15 +281,10 @@ function synchronize(
 
       return s
     })
-  }).as(b)
+  }).as(b).orDie()
 }
 
-function diff(comment: Node, oldNodes: Array<Node | Wire>, newNodes: Array<Node | Wire>): Effect<
-  never,
-  | Template.NoNextSiblingException
-  | Wire.NoFirstChildException
-  | Wire.NoLastChildException
-  | Template.NoParentNodeException,
+function diff(comment: Node, oldNodes: Array<Node | Wire>, newNodes: Array<Node | Wire>): Effect.UIO<
   Array<Node | Wire>
 > {
   return Effect.fromMaybe(Maybe.fromNullable(comment.parentNode)).mapError(() => new Template.NoParentNodeException())
@@ -322,38 +311,20 @@ function diff(comment: Node, oldNodes: Array<Node | Wire>, newNodes: Array<Node 
         diffable,
         comment
       )
-    )
+    ).orDie()
 }
 
 function anyContent(
-  oldValueRef: Ref.Synchronized<Maybe<unknown>>,
+  oldValueRef: Ref.Synchronized<Maybe<Component.Values>>,
   textRef: Ref.Synchronized<Maybe<Text>>,
   nodesRef: Ref.Synchronized<Array<Node | Wire>>,
   comment: Node,
-  newValue: unknown
-): Effect<
-  never,
-  | Template.NoNextSiblingException
-  | Wire.NoFirstChildException
-  | Wire.NoLastChildException
-  | Template.NoParentNodeException
-  | Template.NoTextNodeException,
-  void
-> {
+  newValue: Component.Values
+): Effect.UIO<void> {
   return oldValueRef.updateSomeEffect(
     (
       oldValue
-    ): Maybe<
-      Effect<
-        never,
-        | Template.NoNextSiblingException
-        | Wire.NoFirstChildException
-        | Wire.NoLastChildException
-        | Template.NoParentNodeException
-        | Template.NoTextNodeException,
-        Maybe<unknown>
-      >
-    > => {
+    ) => {
       switch (typeof newValue) {
         // primitives are handled as text content
         case "string":
@@ -369,26 +340,32 @@ function anyContent(
                 ).catchAll(() => Effect.succeed(() => document.createTextNode(String(newValue)))).asSome()
               ).flatMap((_) => Effect.fromMaybe(_).mapError(() => new Template.NoTextNodeException())).flatMap((text) =>
                 nodesRef.updateAndGetEffect((nodes) => diff(comment, nodes, [text]))
-              ).as(newValue).asSome()
+              ).as(newValue)
+                .asSome().orDie()
             )
           }
           break
         // null, and undefined are used to cleanup previous content
         case "object":
-        case "undefined":
-          if (newValue == null) {
-            if (oldValue != Maybe.fromNullable(newValue)) {
-              return Maybe.some(nodesRef.updateEffect((nodes) => diff(comment, nodes, [])).as(newValue).asSome())
+          if (Placeholder.isNone(newValue)) {
+            if (oldValue != Maybe.some(newValue)) {
+              return Maybe.some(
+                nodesRef.updateEffect((nodes) => diff(comment, nodes, [])).as(newValue).asSome().orDie()
+              )
             }
 
             return Maybe.none
           }
           // arrays and nodes have a special treatment
-          if (Array.isArray(newValue)) {
+          if (Chunk.isChunk(newValue)) {
             // arrays can be used to cleanup, if empty
             // or diffed, if these contains nodes or "wires"
-            if (newValue.length === 0 || Wire.isWire(newValue[0]) || isNode(newValue[0])) {
-              return Maybe.some(nodesRef.updateEffect((nodes) => diff(comment, nodes, newValue)).as(newValue).asSome())
+            if (newValue.isEmpty || Wire.isWire(newValue.unsafeGet(0)) || isNode(newValue.unsafeGet(0))) {
+              return Maybe.some(
+                nodesRef.updateEffect((nodes) =>
+                  diff(comment, nodes, newValue.filter((_): _ is Wire | Node => Wire.isWire(_) || isNode(_)).toArray)
+                ).as(newValue).asSome().orDie()
+              )
             }
             // in all other cases the content is stringified as is
             return Maybe.some(
@@ -416,16 +393,10 @@ function anyContent(
                 }
 
                 return diff(comment, nodes, newNodes.build().toArray)
-              }).as(newValue).asSome()
+              }).as(newValue).asSome().orDie()
             )
           }
           break
-        case "function":
-          return Maybe.some(
-            Effect.succeed(() => newValue(comment)).flatMap((value) =>
-              anyContent(oldValueRef, textRef, nodesRef, comment, value).as(() => value).asSome()
-            )
-          )
       }
 
       return Maybe.none
@@ -435,14 +406,19 @@ function anyContent(
 
 function handleAnything(comment: Node) {
   return Effect.struct({
-    oldValue: Ref.Synchronized.make<Maybe<unknown>>(Maybe.none),
+    oldValue: Ref.Synchronized.make<Maybe<Component.Values>>(Maybe.none),
     text: Ref.Synchronized.make<Maybe<Text>>(Maybe.none),
     nodes: Ref.Synchronized.make<Array<Node | Wire>>(Array.empty)
   })
-    .map(({ nodes, oldValue, text }) => (newValue: unknown) => anyContent(oldValue, text, nodes, comment, newValue))
+    .map(({ nodes, oldValue, text }) =>
+      (newValue: Component.Values) => anyContent(oldValue, text, nodes, comment, newValue)
+    )
 }
 
-function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => Effect.UIO<void>> {
+function event(
+  node: Element,
+  name: string
+): Effect.UIO<(newValue: EventListenerOrEventListenerObject) => Effect.UIO<void>> {
   let lower: string
   let type = name.slice(2)
   if (!(name in node) && (lower = name.toLowerCase()) in node) {
@@ -450,15 +426,16 @@ function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => E
   }
 
   return Ref.Synchronized.make<Maybe<EventListenerOrEventListenerObject>>(Maybe.none).map((ref) =>
-    (newValue: unknown) =>
+    (newValue: EventListenerOrEventListenerObject) =>
       ref.updateSomeEffect((oldValue) => {
-        const info = Array.isArray(newValue) ? newValue : [newValue, false]
-        if (oldValue != Maybe.some(info[0])) {
+        if (oldValue != Maybe.some(newValue)) {
           return Maybe.some(
             Effect.fromMaybe(oldValue).flatMap((_) =>
-              Effect.succeed(() => node.removeEventListener(type, _, info[1])).as(oldValue)
-            ).catchAll(() =>
-              Effect.succeed(() => node.addEventListener(type, info[0], info[1])).as(() => info[0]).asSome()
+              Effect.succeed(() => node.removeEventListener(type, _))
+                .as(oldValue)
+            ).catchAll(() => Effect.unit).zipRight(
+              Effect.succeed(() => node.addEventListener(type, newValue))
+                .as(Maybe.some(newValue))
             )
           )
         }
@@ -468,7 +445,7 @@ function event(node: Element, name: string): Effect.UIO<(newValue: unknown) => E
   )
 }
 
-function attribute(node: Element, name: string): Effect.UIO<(value: string) => Effect.UIO<void>> {
+function attribute<R, E extends Event>(node: Element, name: string): Effect.UIO<Template.Update> {
   const attributeNode = document.createAttributeNS(null, name)
   return Ref.Synchronized.make<{ orphan: boolean; oldValue: Maybe<string> }>({ orphan: true, oldValue: Maybe.none })
     .map((ref) =>
@@ -503,17 +480,12 @@ function attribute(node: Element, name: string): Effect.UIO<(value: string) => E
 }
 
 // attributes can be:
-//  * @event=${...}   to explicitly handle event listeners
+//  * onevent=${...}   to explicitly handle event listeners
 //  * generic=${...}  to handle an attribute just like an attribute
-function handleAttribute(
+function handleAttribute<R>(
   node: Element,
   name: string
-): Effect<
-  never,
-  Template.InvalidElementException,
-  | ((newValue: unknown) => Effect.UIO<void>)
-  | ((newValue: string) => Effect.UIO<void>)
-> {
+): Effect.UIO<Template.Update> {
   if (name[0] === "0" && name[1] === "n") {
     return event(node, name)
   }
@@ -521,7 +493,7 @@ function handleAttribute(
   return attribute(node, name)
 }
 
-function text(node: Node): Effect.UIO<(value: string) => Effect.UIO<void>> {
+function text(node: Node): Effect.UIO<Template.Update> {
   return Ref.Synchronized.make<Maybe<string>>(Maybe.none).map((ref) =>
     (newValue: string) =>
       ref.updateSomeEffect((oldValue) => {
@@ -539,25 +511,11 @@ function text(node: Node): Effect.UIO<(value: string) => Effect.UIO<void>> {
   )
 }
 
-function handlers(
+function handlers<R>(
   fragment: DocumentFragment
 ) {
-  return ({ name, path }: Template.Node): Effect<
-    never,
-    Template.MissingNodeException | Template.InvalidElementException,
-    | ((
-      newValue: unknown
-    ) => Effect<
-      never,
-      | Template.NoNextSiblingException
-      | Wire.NoFirstChildException
-      | Wire.NoLastChildException
-      | Template.NoParentNodeException
-      | Template.NoTextNodeException,
-      void
-    >)
-    | ((newValue: unknown) => Effect.UIO<void>)
-    | ((newValue: string) => Effect.UIO<void>)
+  return ({ name, path }: Template.Node): Effect.UIO<
+    Template.Update
   > =>
     Effect.fromMaybe(
       path.reduceRight(
@@ -577,35 +535,19 @@ function handlers(
       }
 
       return text(node)
-    })
+    }).orDie()
 }
 
 /**
- * @tsplus fluent ets/Template updates
+ * @tsplus fluent effect/html/Template updates
  */
-export function updates(
+export function updates<R>(
   self: Template,
   fragment: DocumentFragment
-): Effect<
-  never,
-  Template.InvalidElementException | Template.MissingNodeException,
-  Chunk<
-    | ((
-      newValue: unknown
-    ) => Effect<
-      never,
-      | Wire.NoFirstChildException
-      | Wire.NoLastChildException
-      | Template.NoNextSiblingException
-      | Template.NoParentNodeException
-      | Template.NoTextNodeException,
-      void
-    >)
-    | ((newValue: unknown) => Effect.UIO<void>)
-    | ((newValue: string) => Effect.UIO<void>)
-  >
+): Effect.UIO<
+  ImmutableArray<Template.Update>
 > {
   concreteTemplate(self)
   // relate an update handler per each node that needs one
-  return Chunk.from(self.nodes).mapEffect(handlers(fragment))
+  return Chunk.from(self.nodes).mapEffect(handlers(fragment)).map((_) => _.toImmutableArray)
 }

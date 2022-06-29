@@ -1,55 +1,48 @@
 // both `html` and `svg` template literal tags are polluted
 // with a `for(ref[, id])` and a `node` tag too
-
 interface Tag {
-  <A extends Array<unknown>>(
+  <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...values: A
-  ): Effect<ExtractR<A>, ExtractE<A>, Hole>
+  ): Effect<Placeholder.Env<A>, never, Hole>
   for(
     ref: object,
     id: unknown
-  ): <R, E, A>(
+  ): (
     hole: Hole
   ) => Effect<
-    TemplateCache | KeyedCache | R,
-    E | Template.InvalidElementException | Template.MissingNodeException,
-    Wire | ParentNode | ChildNode
-  >
-  node: (
-    template: TemplateStringsArray,
-    ...values: Array<unknown>
-  ) => Effect<
-    TemplateCache | KeyedCache,
+    never,
     Template.InvalidElementException | Template.MissingNodeException,
-    ParentNode | ChildNode
+    Wire | Node
+  >
+  node: <A extends Array<Placeholder<any>>>(
+    template: TemplateStringsArray,
+    ...values: A
+  ) => Effect<
+    Placeholder.Env<A>,
+    Template.InvalidElementException | Template.MissingNodeException,
+    Node
   >
 }
-
-type ExtractRD<F> = F extends Effect<infer R, any, any> ? R : never
-type ExtractR<A extends Array<unknown>> = ExtractRD<
-  {
-    [k in keyof A]: unknown extends A[k] ? never : A[k]
-  }[number]
->
-type ExtractED<F> = F extends Effect<any, infer E, any> ? E : never
-type ExtractE<A extends Array<unknown>> = ExtractED<
-  {
-    [k in keyof A]: unknown extends A[k] ? never : A[k]
-  }[number]
->
 
 function tag(
   type: "html" | "svg"
 ): Tag {
+  const keyed = WeakCache.empty<
+    object,
+    HashMap<
+      unknown,
+      (hole: Hole) => Effect<never, Template.InvalidElementException | Template.MissingNodeException, Wire>
+    >
+  >()
+
   return Object.assign(
     // non keyed operations are recognized as instance of Hole
     // during the "unroll", recursively resolved and updated
-    <A extends Array<unknown>>(
+    <A extends Array<Placeholder<any>>>(
       template: TemplateStringsArray,
-      ...values: A
-    ): Effect<ExtractR<A>, ExtractE<A>, Hole> =>
-      SubscriptionRef.make<Array<unknown>>(values).map((ref) => Hole(type, template, ref)),
+      ...placeholders: A
+    ): Effect<Placeholder.Env<A>, never, Hole> => Many.from(placeholders).map((values) => Hole(type, template, values)),
     {
       // keyed operations need a reference object, usually the parent node
       // which is showing keyed results, and optionally a unique id per each
@@ -58,9 +51,15 @@ function tag(
       for(
         ref: object,
         id: unknown
-      ) {
+      ): (
+        hole: Hole
+      ) => Effect<
+        never,
+        Template.InvalidElementException | Template.MissingNodeException,
+        Wire | Node
+      > {
         return (hole: Hole) =>
-          KeyedCache.getOrElseEffect(ref, KeyedCache.set(ref, HashMap.empty())).flatMap((memo) =>
+          keyed.getOrElseEffect(ref, keyed.set(ref, HashMap.empty())).flatMap((memo) =>
             Effect.succeed(memo.get(id)).flatMap((fixed) =>
               fixed.isNone() ? Component.empty().flatMap((_) => _.fixed(hole)) : fixed.value(hole)
             )
@@ -68,16 +67,17 @@ function tag(
       },
       // it is possible to create one-off content out of the box via node tag
       // this might return the single created node, or a fragment with all
-      // nodes present at the root level and, of course, their child nodes
-      node: <A extends Array<unknown>>(template: TemplateStringsArray, ...values: A) =>
+      // nodes present at the root level and, of course, their Placeholder nodes
+      node: <A extends Array<Placeholder<any>>>(
+        template: TemplateStringsArray,
+        ...placeholders: A
+      ): Effect<Placeholder.Env<A>, never, Node> =>
         Component.empty().zip(
-          SubscriptionRef.make<Array<unknown>>(values).map((ref) => Hole(type, template, ref))
+          Many.from(placeholders).map((values) => Hole(type, template, values))
         ).flatMap((tp) => {
           const { tuple: [component, hole] } = tp
 
-          return component.unroll(hole).flatMap((_) =>
-            Wire.isWire(_) ? _.valueOf : Effect.succeed(_.valueOf() as ParentNode | ChildNode)
-          )
+          return component.unroll(hole).flatMap((_) => Wire.isWire(_) ? _.valueOf : Effect.succeed(_.valueOf() as Node))
         })
     }
   )

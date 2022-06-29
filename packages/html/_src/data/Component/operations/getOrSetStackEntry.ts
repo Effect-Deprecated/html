@@ -1,7 +1,7 @@
 import { concreteComponent } from "@effect/html/data/Component/operations/_internal/InternalComponent"
 
 /**
- * @tsplus fluent ets/Component getOrSetStackEntry
+ * @tsplus fluent effect/html/Component getOrSetStackEntry
  */
 export function getOrSetStackEntry(
   self: Component,

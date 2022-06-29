@@ -8,7 +8,7 @@ export class InternalEntry implements Entry {
     readonly type: string,
     readonly template: TemplateStringsArray,
     readonly content: ParentNode,
-    readonly updates: ImmutableArray<(u: any) => Effect<never, any, void>>,
+    readonly updates: ImmutableArray<Template.Update>,
     readonly wire: Ref.Synchronized<Maybe<Wire | ChildNode | ParentNode>>
   ) {}
 }
@@ -22,7 +22,7 @@ export function concreteEntry(
   //
 }
 /**
- * @tsplus operator ets/Entry ==
+ * @tsplus operator effect/html/Entry ==
  */
 export function equalsHole(self: Entry, that: Hole): boolean {
   concreteEntry(self)

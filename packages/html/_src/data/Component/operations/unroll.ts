@@ -4,14 +4,12 @@
  * discover what to do with each interpolation, which will result
  * into an update operation.
  *
- * @tsplus fluent ets/Component unroll
+ * @tsplus fluent effect/html/Component unroll
  */
 export function unroll(
   self: Component,
   hole: Hole
-): Effect<
-  TemplateCache,
-  Template.InvalidElementException | Template.MissingNodeException,
+): Effect.UIO<
   Wire | ChildNode | ParentNode
 > {
   return self.entry.flatMap((entry) =>
@@ -20,18 +18,13 @@ export function unroll(
       Effect.succeed(() => entry.value)
   )
     .tap((entry) =>
-      hole.values.take(1).tap((_) =>
-        self.unrollValues(_).map((_) => _.collect(identity)).flatMap((updates) =>
-          updates.isEmpty ?
-            Effect.unit :
-            hole.updateValuesEffect((_) => updates.mapEffectDiscard(identity).as(_))
-        )
-      ).map(Chunk.from).tap((_) =>
+      self.unrollValues(hole.values).tap((_) =>
         _.zipWithIndex.mapEffectDiscard((tp) => {
           const { tuple: [value, index] } = tp
 
           return entry.updateWithValue(index, value)
         })
-      ).runDrain()
-    ).flatMap((entry) => entry.toWire)
+      )
+    )
+    .flatMap((entry) => entry.toWire)
 }

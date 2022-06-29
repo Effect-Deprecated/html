@@ -1,7 +1,7 @@
 import { concreteTemplate } from "@effect/html/data/Template/operations/_internal/InternalTemplate"
 
 /**
- * @tsplus getter ets/Template toDocumentFragment
+ * @tsplus getter effect/html/Template toDocumentFragment
  */
 export function toDocumentFragment(
   self: Template

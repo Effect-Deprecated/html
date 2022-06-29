@@ -8,7 +8,7 @@ export const _V = Symbol.for("@effect/html/io/WeakCache/V")
 export type _V = typeof _V
 
 /**
- * @tsplus type ets/WeakCache
+ * @tsplus type effect/html/WeakCache
  */
 export interface WeakCache<K extends object, V> {
   readonly [WeakCacheSym]: WeakCacheSym
@@ -17,7 +17,7 @@ export interface WeakCache<K extends object, V> {
 }
 
 /**
- * @tsplus type ets/WeakCache/Ops
+ * @tsplus type effect/html/WeakCache/Ops
  */
 export interface WeakCacheOps {
   $: WeakCacheAspects
@@ -27,6 +27,6 @@ export const WeakCache: WeakCacheOps = {
 }
 
 /**
- * @tsplus type ets/WeakCache/Aspects
+ * @tsplus type effect/html/WeakCache/Aspects
  */
 export interface WeakCacheAspects {}

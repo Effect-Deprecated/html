@@ -11,7 +11,7 @@ const holes = /[\x01\x02]/g
  * Given a template, find holes as both nodes and attributes and
  * return a string with holes as either comment nodes or named attributes.
  *
- * @tsplus getter ets/Hole instrument
+ * @tsplus getter effect/html/Hole instrument
  */
 export function instrument(
   self: Hole

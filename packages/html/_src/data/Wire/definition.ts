@@ -13,14 +13,14 @@ export declare namespace Wire {
 }
 
 /**
- * @tsplus type ets/Wire
+ * @tsplus type effect/html/Wire
  */
 export interface Wire {
   readonly [WireSym]: WireSym
 }
 
 /**
- * @tsplus type ets/Wire/Ops
+ * @tsplus type effect/html/Wire/Ops
  */
 export interface WireOps {
   $: WireAspects
@@ -38,6 +38,6 @@ export const Wire: WireOps = {
 }
 
 /**
- * @tsplus type ets/Wire/Aspects
+ * @tsplus type effect/html/Wire/Aspects
  */
 export interface WireAspects {}

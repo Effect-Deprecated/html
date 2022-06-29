@@ -2,19 +2,19 @@ export const HoleSym = Symbol.for("@effect/html/data/Hole")
 export type HoleSym = typeof HoleSym
 
 /**
- * @tsplus type ets/Hole
+ * @tsplus type effect/html/Hole
  */
-export interface Hole {
+export interface Hole extends Placeholder.Generic<never> {
   readonly [HoleSym]: HoleSym
 }
 
 /**
- * @tsplus static ets/Hole/Ops PREFIX
+ * @tsplus static effect/html/Hole/Ops PREFIX
  */
 export const PREFIX = "isµ"
 
 /**
- * @tsplus type ets/Hole/Ops
+ * @tsplus type effect/html/Hole/Ops
  */
 export interface HoleOps {
   $: HoleAspects
@@ -24,6 +24,6 @@ export const Hole: HoleOps = {
 }
 
 /**
- * @tsplus type ets/Hole/Aspects
+ * @tsplus type effect/html/Hole/Aspects
  */
 export interface HoleAspects {}

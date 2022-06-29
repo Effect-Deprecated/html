@@ -1,12 +1,12 @@
 import { concreteHole } from "@effect/html/data/Hole/operations/_internal/InternalHole"
 
 /**
- * @tsplus static ets/Entry/Ops fromHole
- * @tsplus getter ets/Hole toEntry
+ * @tsplus static effect/html/Entry/Ops fromHole
+ * @tsplus getter effect/html/Hole toEntry
  */
 export function toEntry(
   self: Hole
-): Effect<TemplateCache, Template.InvalidElementException | Template.MissingNodeException, Entry> {
+): Effect.UIO<Entry> {
   concreteHole(self)
 
   return TemplateCache.getOrElseEffect(self.template, TemplateCache.set(self.template, self.toTemplate)).flatMap((
@@ -17,5 +17,5 @@ export function toEntry(
     return template.updates(fragment).flatMap((updates) =>
       Entry(self.type, self.template, fragment, updates.toImmutableArray)
     )
-  })
+  }).orDie()
 }

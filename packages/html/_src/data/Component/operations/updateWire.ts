@@ -1,7 +1,7 @@
 import { concreteComponent } from "@effect/html/data/Component/operations/_internal/InternalComponent"
 
 /**
- * @tsplus fluent ets/Component updateWire
+ * @tsplus fluent effect/html/Component updateWire
  */
 export function updateWire(
   self: Component,

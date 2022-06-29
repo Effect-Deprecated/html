@@ -60,8 +60,5 @@
         "node_modules",
         "build",
         "lib"
-    ],
-    "files": [
-        "./packages/html/_src/global.ts"
     ]
 }

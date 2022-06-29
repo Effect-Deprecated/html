@@ -15,7 +15,7 @@ function toSVG(svg: string): DocumentFragment {
 }
 
 /**
- * @tsplus getter ets/Hole toDocumentFragment
+ * @tsplus getter effect/html/Hole toDocumentFragment
  */
 export function toDocumentFragment(
   self: Hole

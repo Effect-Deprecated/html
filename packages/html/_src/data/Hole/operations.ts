@@ -6,6 +6,5 @@ export * from "@effect/html/data/Hole/operations/make"
 export * from "@effect/html/data/Hole/operations/toDocumentFragment"
 export * from "@effect/html/data/Hole/operations/toEntry"
 export * from "@effect/html/data/Hole/operations/toTemplate"
-export * from "@effect/html/data/Hole/operations/updateValuesEffect"
 export * from "@effect/html/data/Hole/operations/values"
 // codegen:end

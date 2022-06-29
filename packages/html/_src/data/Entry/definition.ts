@@ -2,14 +2,14 @@ export const EntrySym = Symbol.for("@effect/html/data/Entry")
 export type EntrySym = typeof EntrySym
 
 /**
- * @tsplus type ets/Entry
+ * @tsplus type effect/html/Entry
  */
 export interface Entry {
   readonly [EntrySym]: EntrySym
 }
 
 /**
- * @tsplus type ets/Entry/Ops
+ * @tsplus type effect/html/Entry/Ops
  */
 export interface EntryOps {
   $: EntryAspects
@@ -19,6 +19,6 @@ export const Entry: EntryOps = {
 }
 
 /**
- * @tsplus type ets/Entry/Aspects
+ * @tsplus type effect/html/Entry/Aspects
  */
 export interface EntryAspects {}

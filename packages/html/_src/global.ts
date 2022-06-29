@@ -59,15 +59,19 @@ import { TemplateCache } from "@effect/html/io/TemplateCache"
 /**
  * @tsplus global
  */
-import { KeyedCache } from "@effect/html/io/KeyedCache"
-/**
- * @tsplus global
- */
 import { Component } from "@effect/html/data/Component"
 /**
  * @tsplus global
  */
 import { Hole } from "@effect/html/data/Hole"
+/**
+ * @tsplus global
+ */
+import { Many } from "@effect/html/data/Many"
+/**
+ * @tsplus global
+ */
+import { Placeholder } from "@effect/html/data/Placeholder"
 /**
  * @tsplus global
  */
@@ -80,7 +84,3 @@ import { Template } from "@effect/html/data/Template"
  * @tsplus global
  */
 import { Wire } from "@effect/html/data/Wire"
-
-// =============================================================================
-// @tsplus/stdlib
-// =============================================================================

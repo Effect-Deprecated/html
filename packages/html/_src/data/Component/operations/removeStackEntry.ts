@@ -1,7 +1,7 @@
 import { concreteComponent } from "@effect/html/data/Component/operations/_internal/InternalComponent"
 
 /**
- * @tsplus fluent ets/Component removeStackEntry
+ * @tsplus fluent effect/html/Component removeStackEntry
  */
 export function removeStackEntry(
   self: Component,

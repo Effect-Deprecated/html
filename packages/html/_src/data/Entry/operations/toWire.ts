@@ -1,8 +1,8 @@
 import { concreteEntry } from "@effect/html/data/Entry/operations/_internal/InternalEntry"
 
 /**
- * @tsplus static ets/Wire/Ops fromEntry
- * @tsplus getter ets/Entry toWire
+ * @tsplus static effect/html/Wire/Ops fromEntry
+ * @tsplus getter effect/html/Entry toWire
  */
 export function toWire(
   self: Entry
