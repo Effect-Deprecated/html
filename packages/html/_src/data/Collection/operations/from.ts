@@ -1,14 +1,14 @@
 import { Base } from "@effect/core/io/Effect/definition/base"
-import { ManyInternal } from "@effect/html/data/Many/operations/_internal/ManyInternal"
+import { CollectionInternal } from "@effect/html/data/Collection/operations/_internal/CollectionInternal"
 
 /**
- * Constructs `Many`.
+ * Constructs `Collection`.
  *
- * @tsplus static effect/html/Many/Ops from
+ * @tsplus static effect/html/Collection/Ops __call
  */
 export function from<A extends Array<Placeholder<any>>>(
   placeholders: A
-): Effect<Placeholder.Env<A>, never, Many> {
+): Effect<Placeholder.Env<A>, never, Collection> {
   return Chunk.from(placeholders).mapEffect((_) => {
     if (_ instanceof Base) {
       return _ as Effect<Placeholder.Env<A>, never, Placeholder.Value>
@@ -16,7 +16,7 @@ export function from<A extends Array<Placeholder<any>>>(
 
     return Effect.succeedNow(_ as Placeholder.Value)
   }).map((_) =>
-    new ManyInternal(
+    new CollectionInternal(
       _
     )
   )

@@ -10,6 +10,7 @@ export declare namespace Component {
     | EventListenerObject
     | Wire
     | Node
+    | ElementRef
     | Component
     | Placeholder.None
   export type Values =

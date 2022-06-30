@@ -38,7 +38,9 @@ export declare namespace Placeholder {
     | EventListenerObject
     | Hole
     | Placeholder.None
+    | ElementRef
     | Many
+    | Collection
   export type Env<A extends Array<Placeholder<any>>> = { [k in keyof A]: Placeholder.R<A[k]> }[number]
 }
 

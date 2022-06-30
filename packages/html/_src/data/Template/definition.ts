@@ -22,6 +22,7 @@ export declare namespace Template {
   export type Update =
     | ((value: number) => Effect.UIO<void>)
     | ((value: string) => Effect.UIO<void>)
+    | ((value: ElementRef) => Effect.UIO<void>)
     | ((value: EventListenerOrEventListenerObject) => Effect.UIO<void>)
     | ((value: boolean) => Effect.UIO<void>)
     | ((value: Component.Values) => Effect.UIO<void>)

@@ -6,7 +6,7 @@ import { InternalHole } from "@effect/html/data/Hole/operations/_internal/Intern
 export function make(
   type: string,
   template: TemplateStringsArray,
-  values: Many
+  values: Collection
 ): Hole {
   return new InternalHole(type, template, values)
 }

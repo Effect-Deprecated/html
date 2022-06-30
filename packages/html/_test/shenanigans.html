@@ -18,11 +18,11 @@
         let first = 0;
         const renderDivs = (firstRow, secondRow) => H.html`
   <div>
-    ${H.Many.from(firstRow.map(span, div1))}
+    ${H.Collection(firstRow.map(span, div1))}
   </div>
   <hr>
   <div>
-    ${H.Many.from(secondRow.map(span, div2))}
+    ${H.Collection(secondRow.map(span, div2))}
   </div>
 `;
 

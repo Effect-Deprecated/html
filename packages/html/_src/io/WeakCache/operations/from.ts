@@ -1,4 +1,5 @@
 import { InternalWeakCache } from "@effect/html/io/WeakCache/operations/_internal/InternalWeakCache"
+import type { Collection } from "@tsplus/stdlib/collections/Collection"
 
 /**
  * @tsplus static effect/html/WeakCache/Ops from

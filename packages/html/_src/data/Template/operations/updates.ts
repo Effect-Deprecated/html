@@ -1,3 +1,4 @@
+import { concreteElementRef } from "@effect/html/data/ElementRef/operations/_internal/ElementRefInternal"
 import { concreteTemplate } from "@effect/html/data/Template/operations/_internal/InternalTemplate"
 
 export function whileDiscard<Z>(
@@ -479,6 +480,20 @@ function attribute<R, E extends Event>(node: Element, name: string): Effect.UIO<
     )
 }
 
+function ref(node: Element): Effect.UIO<(value: ElementRef) => Effect.UIO<void>> {
+  return Ref.Synchronized.make<Maybe<ElementRef>>(Maybe.none).map((ref) =>
+    (value: ElementRef) =>
+      ref.updateSomeEffect((oldValue) => {
+        if (oldValue != Maybe.some(value)) {
+          concreteElementRef(value)
+          value.ref.set(Maybe.some(node))
+        }
+
+        return Maybe.none
+      })
+  )
+}
+
 // attributes can be:
 //  * onevent=${...}   to explicitly handle event listeners
 //  * generic=${...}  to handle an attribute just like an attribute
@@ -488,6 +503,10 @@ function handleAttribute<R>(
 ): Effect.UIO<Template.Update> {
   if (name[0] === "0" && name[1] === "n") {
     return event(node, name)
+  }
+
+  if (name === "ref") {
+    return ref(node)
   }
 
   return attribute(node, name)

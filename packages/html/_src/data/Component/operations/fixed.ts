@@ -6,5 +6,5 @@ export function fixed(self: Component, type: "html" | "svg") {
     template: TemplateStringsArray,
     placeholders: A
   ): Effect<Placeholder.Env<A>, never, Wire | ChildNode | ParentNode> =>
-    Many.from(placeholders).flatMap((values) => self.unroll(Hole(type, template, values)))
+    Collection(placeholders).flatMap((values) => self.unroll(Hole(type, template, values)))
 }

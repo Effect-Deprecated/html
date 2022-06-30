@@ -1,4 +1,4 @@
-export const ManySym = Symbol.for("@effect/html/data/Placeholder/Many")
+export const ManySym = Symbol.for("@effect/html/data/Many")
 export type ManySym = typeof ManySym
 
 /**

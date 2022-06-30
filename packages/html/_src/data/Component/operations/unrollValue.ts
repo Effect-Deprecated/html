@@ -14,7 +14,7 @@ export function unrollValue(
 
   // arrays are recursively resolved so that each component will contain
   // also a DOM component or a wire, hence it can be diffed if/when needed
-  if (Many.isMany(value)) {
+  if (Many.isMany(value) || Collection.isCollection(value)) {
     return self.getOrSetStackEntry(index).flatMap((_) => _.unrollValues(value.toChunk))
   }
 

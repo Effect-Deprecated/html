@@ -9,7 +9,7 @@ export class InternalHole implements Hole {
   constructor(
     readonly type: string,
     readonly template: TemplateStringsArray,
-    readonly values: Many
+    readonly values: Collection
   ) {}
 }
 
