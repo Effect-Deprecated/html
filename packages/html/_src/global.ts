@@ -15,6 +15,14 @@ import { Maybe } from "@tsplus/stdlib/data/Maybe"
 /**
  * @tsplus global
  */
+import { Service } from "@tsplus/stdlib/service/Service"
+/**
+ * @tsplus global
+ */
+import { Layer } from "@effect/core/io/Layer"
+/**
+ * @tsplus global
+ */
 import { Hash } from "@tsplus/stdlib/structure/Hash"
 /**
  * @tsplus global
@@ -120,3 +128,7 @@ import { Wire } from "@effect/html/data/Wire"
  * @tsplus global
  */
 import { afterRender, withHooks } from "@effect/html/io/Hooks"
+/**
+ * @tsplus global
+ */
+import { RenderContext } from "@effect/html/io/RenderContext"

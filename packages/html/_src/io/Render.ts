@@ -4,19 +4,19 @@ interface Tag {
   <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...values: A
-  ): Effect<Placeholder.Env<A>, never, Interpolation>
+  ): Effect<Placeholder.Env<A> | RenderContext, never, Interpolation>
   for(
     ref: object,
     id: unknown
   ): <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...placeholders: A
-  ) => Effect<Placeholder.Env<A>, never, Node | Wire>
+  ) => Effect<Placeholder.Env<A> | RenderContext, never, Node | Wire>
   node: <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...values: A
   ) => Effect<
-    Placeholder.Env<A>,
+    Placeholder.Env<A> | RenderContext,
     Template.InvalidElementException | Template.MissingNodeException,
     Node
   >
@@ -43,7 +43,7 @@ function tag(
     <A extends Array<Placeholder<any>>>(
       template: TemplateStringsArray,
       ...placeholders: A
-    ): Effect<Placeholder.Env<A>, never, Interpolation> =>
+    ): Effect<Placeholder.Env<A> | RenderContext, never, Interpolation> =>
       Many.from(placeholders).map((values) => Interpolation(type, template, values)),
     {
       // keyed operations need a reference object, usually the parent node
@@ -57,7 +57,7 @@ function tag(
         return <A extends Array<Placeholder<any>>>(
           template: TemplateStringsArray,
           ...placeholders: A
-        ): Effect<Placeholder.Env<A>, never, Node | Wire> => {
+        ): Effect<Placeholder.Env<A> | RenderContext, never, Node | Wire> => {
           const memo = keyed.getOrElse(ref, keyed.set(ref, HashMap.empty()))
           const fixed = memo.get(id).getOrElse(() => {
             const portal = Portal.empty()
@@ -74,7 +74,7 @@ function tag(
       node: <A extends Array<Placeholder<any>>>(
         template: TemplateStringsArray,
         ...placeholders: A
-      ): Effect<Placeholder.Env<A>, never, Node> =>
+      ): Effect<Placeholder.Env<A> | RenderContext, never, Node> =>
         Many.from(placeholders).map((values) => Interpolation(type, template, values))
           .map((interpolation) => {
             const portal = Portal.empty()
@@ -94,7 +94,7 @@ function tag(
 export function render<A extends Element, R, E>(
   where: A,
   fa: Effect<R, E, Interpolation | Node>
-) {
+): Effect<Exclude<R, RenderContext>, E, A> {
   return withHooks(
     fa,
     (interpolation) =>
@@ -105,7 +105,7 @@ export function render<A extends Element, R, E>(
         if (wire !== portal.wire) {
           portal.setWire(wire)
 
-          return where.replaceChildren(
+          where.replaceChildren(
             Wire.isWire(wire) ?
               wire.valueOf :
               wire.valueOf() as Node
@@ -113,8 +113,8 @@ export function render<A extends Element, R, E>(
         }
 
         return where
-      })
-  )
+      }).orDie()
+  ).provideSomeLayer(RenderContext("DOM"))
 }
 
 export const html = tag("html")
