@@ -5,8 +5,12 @@ import { concreteWire } from "@effect/html/data/Wire/operations/_internal/Intern
  */
 export function firstChild(
   self: Wire
-): Maybe<ChildNode> {
+): ChildNode {
   concreteWire(self)
+
+  if (self.firstChild == null) {
+    throw new Wire.NoFirstChildException()
+  }
 
   return self.firstChild
 }

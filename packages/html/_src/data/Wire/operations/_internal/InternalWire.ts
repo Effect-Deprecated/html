@@ -6,10 +6,10 @@ export class InternalWire implements Wire {
   readonly [WireSym]: WireSym = WireSym
 
   constructor(
-    readonly fragment: Ref.Synchronized<ParentNode>,
-    readonly nodes: Chunk<ChildNode>,
-    readonly firstChild: Maybe<ChildNode>,
-    readonly lastChild: Maybe<ChildNode>
+    readonly node: ParentNode,
+    readonly nodes: Array<ChildNode>,
+    readonly firstChild: ChildNode | null | undefined,
+    readonly lastChild: ChildNode | null | undefined
   ) {}
 }
 

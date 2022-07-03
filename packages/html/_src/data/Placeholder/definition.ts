@@ -10,8 +10,6 @@ declare global {
   interface String extends Placeholder.Generic<never> {}
   interface Number extends Placeholder.Generic<never> {}
   interface Boolean extends Placeholder.Generic<never> {}
-  interface EventListener extends Placeholder.Generic<never> {}
-  interface EventListenerObject extends Placeholder.Generic<never> {}
 }
 
 /**
@@ -34,13 +32,11 @@ export declare namespace Placeholder {
     | string
     | number
     | boolean
-    | EventListener
-    | EventListenerObject
-    | Hole
+    | Handler
+    | Interpolation
     | Placeholder.None
     | ElementRef
     | Many
-    | Collection
   export type Env<A extends Array<Placeholder<any>>> = { [k in keyof A]: Placeholder.R<A[k]> }[number]
 }
 

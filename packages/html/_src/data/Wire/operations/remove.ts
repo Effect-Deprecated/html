@@ -5,27 +5,22 @@ import { concreteWire } from "@effect/html/data/Wire/operations/_internal/Intern
  */
 export function remove(
   self: Wire
-): Effect<never, Wire.NoFirstChildException | Wire.NoLastChildException, ChildNode> {
+): ChildNode {
   concreteWire(self)
 
-  const firstChild = self.firstChild
-  const lastChild = self.lastChild
-
-  if (firstChild.isNone()) {
-    return Effect.fail(new Wire.NoFirstChildException())
+  if (self.firstChild == null) {
+    throw new Wire.NoFirstChildException()
   }
 
-  if (lastChild.isNone()) {
-    return Effect.fail(new Wire.NoLastChildException())
+  if (self.lastChild == null) {
+    throw new Wire.NoLastChildException()
   }
 
-  return Effect.succeed(() => {
-    const range = document.createRange()
+  const range = document.createRange()
 
-    range.setStartAfter(firstChild.value)
-    range.setEndAfter(lastChild.value)
-    range.deleteContents()
+  range.setStartAfter(self.firstChild)
+  range.setEndAfter(self.lastChild)
+  range.deleteContents()
 
-    return firstChild.value
-  })
+  return self.firstChild
 }

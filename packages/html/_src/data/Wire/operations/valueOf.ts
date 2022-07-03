@@ -5,14 +5,13 @@ import { concreteWire } from "@effect/html/data/Wire/operations/_internal/Intern
  */
 export function valueOf(
   self: Wire
-): Effect.UIO<ParentNode> {
+): ParentNode {
   concreteWire(self)
 
-  return self.fragment.updateSomeAndGetEffect((fragment) => {
-    if (fragment.childNodes.length !== self.nodes.length) {
-      return Maybe.some(Effect.succeed(() => fragment.append(...self.nodes)).as(fragment))
-    }
+  if (self.node.childNodes.length !== self.nodes.length) {
+    // TODO: why??? when does this occur?
+    self.node.append(...self.nodes)
+  }
 
-    return Maybe.none
-  })
+  return self.node
 }

@@ -3,8 +3,6 @@ export * from "@effect/html/io/WeakCache/operations/empty"
 export * from "@effect/html/io/WeakCache/operations/from"
 export * from "@effect/html/io/WeakCache/operations/get"
 export * from "@effect/html/io/WeakCache/operations/getOrElse"
-export * from "@effect/html/io/WeakCache/operations/getOrElseEffect"
 export * from "@effect/html/io/WeakCache/operations/make"
 export * from "@effect/html/io/WeakCache/operations/set"
-export * from "@effect/html/io/WeakCache/operations/setEffect"
 // codegen:end

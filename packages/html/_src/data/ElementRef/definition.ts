@@ -5,7 +5,7 @@ export type ElementRefSym = typeof ElementRefSym
  * @tsplus type effect/html/ElementRef
  */
 export interface ElementRef extends Placeholder.Generic<never> {
-  get current(): Effect.UIO<Maybe<Element>>
+  get current(): Effect.UIO<Element>
 }
 
 /**

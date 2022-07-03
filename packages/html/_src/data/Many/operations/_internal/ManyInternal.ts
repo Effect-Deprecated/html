@@ -6,9 +6,9 @@ export class ManyInternal implements Many {
   readonly [GenericSym]: GenericSym = GenericSym
   readonly [_R]!: (_: never) => never
 
-  constructor(readonly placeholders: Chunk<Placeholder.Value>) {}
+  constructor(readonly placeholders: Array<Placeholder.Value>) {}
 
-  get toChunk(): Chunk<Placeholder.Value> {
+  get toArray(): Array<Placeholder.Value> {
     return this.placeholders
   }
 }

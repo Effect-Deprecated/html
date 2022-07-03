@@ -1,15 +1,19 @@
 import { EntrySym } from "@effect/html/data/Entry/definition"
-import { concreteHole } from "@effect/html/data/Hole/operations/_internal/InternalHole"
 
 export class InternalEntry implements Entry {
   readonly [EntrySym]: EntrySym = EntrySym
 
   constructor(
-    readonly type: string,
+    // the type of node it represents (html or svg)
+    readonly type: "html" | "svg",
+    // the template that is representing
     readonly template: TemplateStringsArray,
-    readonly content: ParentNode,
-    readonly updates: ImmutableArray<Template.Update>,
-    readonly wire: Ref.Synchronized<Maybe<Wire | ChildNode | ParentNode>>
+    // the content document portal with all nodes
+    readonly content: DocumentFragment,
+    // the list of updates per each node (template interpolations)
+    readonly updates: Array<Template.Update>,
+    // the "wired" node or wire that will get updates
+    public wire: Wire | ChildNode | ParentNode | undefined | null
   ) {}
 }
 
@@ -20,12 +24,4 @@ export function concreteEntry(
   _: Entry
 ): asserts _ is InternalEntry {
   //
-}
-/**
- * @tsplus operator effect/html/Entry ==
- */
-export function equalsHole(self: Entry, that: Hole): boolean {
-  concreteEntry(self)
-  concreteHole(that)
-  return self.template === that.template && self.type === that.type
 }

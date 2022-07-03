@@ -3,11 +3,11 @@ import { InternalEntry } from "@effect/html/data/Entry/operations/_internal/Inte
 /**
  * @tsplus static effect/html/Entry/Ops __call
  */
-export function make<R, E, A extends Event>(
-  type: string,
+export function make(
+  type: "html" | "svg",
   template: TemplateStringsArray,
-  content: ParentNode,
-  updates: ImmutableArray<Template.Update>
-): Effect.UIO<Entry> {
-  return Ref.Synchronized.make(Maybe.none).map((wire) => new InternalEntry(type, template, content, updates, wire))
+  content: DocumentFragment,
+  updates: Array<Template.Update>
+): Entry {
+  return new InternalEntry(type, template, content, updates, undefined)
 }

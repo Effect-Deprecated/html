@@ -7,7 +7,7 @@ export type ManySym = typeof ManySym
 export interface Many extends Placeholder.Generic<never> {
   readonly [ManySym]: ManySym
 
-  get toChunk(): Chunk<Placeholder.Value>
+  get toArray(): Array<Placeholder.Value>
 }
 
 /**

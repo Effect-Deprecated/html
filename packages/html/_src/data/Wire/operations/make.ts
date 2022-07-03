@@ -4,14 +4,12 @@ import { InternalWire } from "@effect/html/data/Wire/operations/_internal/Intern
  * @tsplus static effect/html/Wire/Ops __call
  */
 export function make(
-  fragment: ParentNode
-): Effect.UIO<Wire> {
-  return Ref.Synchronized.make(fragment).map((_) =>
-    new InternalWire(
-      _,
-      Chunk.from(fragment.childNodes),
-      Maybe.fromNullable(fragment.firstChild),
-      Maybe.fromNullable(fragment.lastChild)
-    )
+  portal: ParentNode
+): Wire {
+  return new InternalWire(
+    portal,
+    [...portal.childNodes],
+    portal.firstChild,
+    portal.lastChild
   )
 }

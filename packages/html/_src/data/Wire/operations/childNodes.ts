@@ -8,5 +8,5 @@ export function childNodes(
 ): Array<Node> {
   concreteWire(self)
 
-  return self.nodes.toArray
+  return self.nodes
 }

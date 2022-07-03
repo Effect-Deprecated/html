@@ -7,6 +7,6 @@ export function toDocumentFragment(
   self: Template
 ): DocumentFragment {
   concreteTemplate(self)
-  // clone deeply the fragment
+  // clone deeply the portal
   return document.importNode(self.content, true)
 }

@@ -31,10 +31,6 @@ import { Tuple } from "@tsplus/stdlib/data/Tuple"
 /**
  * @tsplus global
  */
-import { ImmutableArray } from "@tsplus/stdlib/collections/ImmutableArray"
-/**
- * @tsplus global
- */
 import { Chunk } from "@tsplus/stdlib/collections/Chunk"
 /**
  * @tsplus global
@@ -75,7 +71,7 @@ import { WeakCache } from "@effect/html/io/WeakCache"
 /**
  * @tsplus global
  */
-import { ComponentCache } from "@effect/html/io/ComponentCache"
+import { PortalCache } from "@effect/html/io/PortalCache"
 /**
  * @tsplus global
  */
@@ -83,11 +79,11 @@ import { TemplateCache } from "@effect/html/io/TemplateCache"
 /**
  * @tsplus global
  */
-import { Component } from "@effect/html/data/Component"
+import { Portal } from "@effect/html/data/Portal"
 /**
  * @tsplus global
  */
-import { Hole } from "@effect/html/data/Hole"
+import { Interpolation } from "@effect/html/data/Interpolation"
 /**
  * @tsplus global
  */
@@ -95,7 +91,11 @@ import { ElementRef } from "@effect/html/data/ElementRef"
 /**
  * @tsplus global
  */
-import { Collection } from "@effect/html/data/Collection"
+import { Collection } from "@tsplus/stdlib/collections/Collection"
+/**
+ * @tsplus global
+ */
+import { Handler } from "@effect/html/data/Handler"
 /**
  * @tsplus global
  */

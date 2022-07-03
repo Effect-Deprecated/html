@@ -6,22 +6,20 @@ import { concreteEntry } from "@effect/html/data/Entry/operations/_internal/Inte
  */
 export function toWire(
   self: Entry
-): Effect.UIO<Wire | ChildNode | ParentNode> {
+): Wire | Node {
   concreteEntry(self)
 
-  return self.wire.updateSomeAndGetEffect((_) => {
-    if (_.isNone()) {
-      if (self.content.firstChild === self.content.lastChild) {
-        if (self.content.lastChild != null) {
-          return Maybe.some(Effect.succeed(self.content.lastChild).map(Maybe.some))
-        }
-
-        return Maybe.some(Effect.succeed(self.content).map(Maybe.some))
+  if (self.wire == null) {
+    if (self.content.firstChild === self.content.lastChild) {
+      if (self.content.lastChild != null) {
+        self.wire = self.content.lastChild
       }
 
-      return Maybe.some(Wire(self.content).map(Maybe.some))
+      self.wire = self.content
     }
 
-    return Maybe.none
-  }).flatMap((_) => Effect.fromMaybe(_)) as Effect.UIO<Wire | ChildNode | ParentNode>
+    self.wire = Wire(self.content)
+  }
+
+  return self.wire
 }

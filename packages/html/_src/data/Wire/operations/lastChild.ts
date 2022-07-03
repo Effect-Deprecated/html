@@ -5,8 +5,12 @@ import { concreteWire } from "@effect/html/data/Wire/operations/_internal/Intern
  */
 export function lastChild(
   self: Wire
-): Maybe<ChildNode> {
+): ChildNode {
   concreteWire(self)
+
+  if (self.lastChild == null) {
+    throw new Wire.NoLastChildException()
+  }
 
   return self.lastChild
 }

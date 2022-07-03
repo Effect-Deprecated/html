@@ -1,23 +1,8 @@
-import { Base } from "@effect/core/io/Effect/definition/base"
-import { ManyInternal } from "@effect/html/data/Many/operations/_internal/ManyInternal"
-
 /**
- * Constructs `Many`.
- *
  * @tsplus static effect/html/Many/Ops __call
  */
 export function make<A extends Array<Placeholder<any>>>(
   ...placeholders: A
 ): Effect<Placeholder.Env<A>, never, Many> {
-  return Chunk.from(placeholders).mapEffect((_) => {
-    if (_ instanceof Base) {
-      return _ as Effect<Placeholder.Env<A>, never, Placeholder.Value>
-    }
-
-    return Effect.succeedNow(_ as Placeholder.Value)
-  }).map((_) =>
-    new ManyInternal(
-      _
-    )
-  )
+  return Many.from(placeholders)
 }
