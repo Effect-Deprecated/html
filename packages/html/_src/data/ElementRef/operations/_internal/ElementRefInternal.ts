@@ -9,9 +9,8 @@ export class ElementRefInternal implements ElementRef {
 
   constructor(readonly ref: AtomicReference<Maybe<Element>>) {}
 
-  get current(): Effect<never, never, Element> {
-    // use proper error class (mapError)
-    return Effect.fromMaybe(this.ref.get).orDie()
+  get current(): Effect<never, never, Maybe<Element>> {
+    return Effect.succeedNow(this.ref.get)
   }
 }
 

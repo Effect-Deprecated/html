@@ -83,11 +83,19 @@ import { PortalCache } from "@effect/html/io/PortalCache"
 /**
  * @tsplus global
  */
+import { UpdateCache } from "@effect/html/io/UpdateCache"
+/**
+ * @tsplus global
+ */
 import { TemplateCache } from "@effect/html/io/TemplateCache"
 /**
  * @tsplus global
  */
 import { Portal } from "@effect/html/data/Portal"
+/**
+ * @tsplus global
+ */
+import { View } from "@effect/html/data/View"
 /**
  * @tsplus global
  */
@@ -111,6 +119,10 @@ import { Many } from "@effect/html/data/Many"
 /**
  * @tsplus global
  */
+import { None } from "@effect/html/data/None"
+/**
+ * @tsplus global
+ */
 import { Placeholder } from "@effect/html/data/Placeholder"
 /**
  * @tsplus global
@@ -124,6 +136,10 @@ import { Template } from "@effect/html/data/Template"
  * @tsplus global
  */
 import { Wire } from "@effect/html/data/Wire"
+/**
+ * @tsplus global
+ */
+import { html, render, renderToString, svg } from "@effect/html/io/Render"
 /**
  * @tsplus global
  */

@@ -1,25 +1,33 @@
 // both `html` and `svg` template literal tags are polluted
 // with a `for(ref[, id])` and a `node` tag too
-interface Tag {
+export interface Tag {
   <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...values: A
-  ): Effect<Placeholder.Env<A> | RenderContext, never, Interpolation>
+  ): Effect<Placeholder.Env<A> | RenderContext, never, View>
   for(
     ref: object,
     id: unknown
   ): <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...placeholders: A
-  ) => Effect<Placeholder.Env<A> | RenderContext, never, Node | Wire>
+  ) => Effect<Placeholder.Env<A> | RenderContext, never, View>
   node: <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...values: A
   ) => Effect<
     Placeholder.Env<A> | RenderContext,
     Template.InvalidElementException | Template.MissingNodeException,
-    Node
+    View
   >
+}
+
+function toInterpolation<A extends Array<Placeholder<any>>>(
+  type: "html" | "svg",
+  template: TemplateStringsArray,
+  placeholders: A
+): Effect<Placeholder.Env<A> | RenderContext, never, Interpolation> {
+  return Many.from(placeholders).map((values) => Interpolation(type, template, values))
 }
 
 function tag(
@@ -43,8 +51,7 @@ function tag(
     <A extends Array<Placeholder<any>>>(
       template: TemplateStringsArray,
       ...placeholders: A
-    ): Effect<Placeholder.Env<A> | RenderContext, never, Interpolation> =>
-      Many.from(placeholders).map((values) => Interpolation(type, template, values)),
+    ): Effect<Placeholder.Env<A> | RenderContext, never, View> => toInterpolation(type, template, placeholders),
     {
       // keyed operations need a reference object, usually the parent node
       // which is showing keyed results, and optionally a unique id per each
@@ -57,16 +64,23 @@ function tag(
         return <A extends Array<Placeholder<any>>>(
           template: TemplateStringsArray,
           ...placeholders: A
-        ): Effect<Placeholder.Env<A> | RenderContext, never, Node | Wire> => {
-          const memo = keyed.getOrElse(ref, keyed.set(ref, HashMap.empty()))
-          const fixed = memo.get(id).getOrElse(() => {
-            const portal = Portal.empty()
+        ): Effect<Placeholder.Env<A> | RenderContext, never, View> =>
+          RenderContext.isDOM().flatMap(
+            (isDOM) => {
+              if (isDOM) {
+                const memo = keyed.getOrElse(ref, keyed.set(ref, HashMap.empty()))
+                const fixed = memo.get(id).getOrElse(() => {
+                  const portal = Portal.empty()
 
-            return keyed.set(ref, memo.set(id, portal.fixed)).unsafeGet(id)
-          })
+                  return keyed.set(ref, memo.set(id, portal.fixed)).unsafeGet(id)
+                })
 
-          return fixed(type, template, placeholders)
-        }
+                return fixed(type, template, placeholders)
+              }
+
+              return toInterpolation(type, template, placeholders)
+            }
+          )
       },
       // it is possible to create one-off content out of the box via node tag
       // this might return the single created node, or a portal with all
@@ -74,14 +88,22 @@ function tag(
       node: <A extends Array<Placeholder<any>>>(
         template: TemplateStringsArray,
         ...placeholders: A
-      ): Effect<Placeholder.Env<A> | RenderContext, never, Node> =>
-        Many.from(placeholders).map((values) => Interpolation(type, template, values))
-          .map((interpolation) => {
-            const portal = Portal.empty()
-            const wireOrNode = portal.unroll(interpolation)
+      ): Effect<Placeholder.Env<A> | RenderContext, never, View> =>
+        RenderContext.isDOM().flatMap(
+          (isDOM) => {
+            if (isDOM) {
+              return Many.from(placeholders).map((values) => Interpolation(type, template, values))
+                .map((interpolation) => {
+                  const portal = Portal.empty()
+                  const wireOrNode = portal.unroll(interpolation)
 
-            return Wire.isWire(wireOrNode) ? wireOrNode.valueOf : wireOrNode.valueOf() as Node
-          })
+                  return Wire.isWire(wireOrNode) ? wireOrNode.valueOf : wireOrNode.valueOf() as Node
+                })
+            }
+
+            return toInterpolation(type, template, placeholders)
+          }
+        )
     }
   )
 }
@@ -93,7 +115,7 @@ function tag(
 // then it's "unrolled" to resolve all its inner nodes.
 export function render<A extends Element, R, E>(
   where: A,
-  fa: Effect<R, E, Interpolation | Node>
+  fa: Effect<R, E, View>
 ): Effect<Exclude<R, RenderContext>, E, A> {
   return withHooks(
     fa,
@@ -115,6 +137,18 @@ export function render<A extends Element, R, E>(
         return where
       }).orDie()
   ).provideSomeLayer(RenderContext("DOM"))
+}
+
+export function renderToString<R, E>(
+  fa: Effect<R, E, View>
+): Effect<Exclude<R, RenderContext>, E, string> {
+  return withHooks(
+    fa,
+    (interpolation) =>
+      Interpolation.isInterpolation(interpolation) ?
+        Effect.succeed(() => interpolation.toString).orDie() :
+        Effect.die("Invalid what for renderToString")
+  ).provideSomeLayer(RenderContext("String"))
 }
 
 export const html = tag("html")

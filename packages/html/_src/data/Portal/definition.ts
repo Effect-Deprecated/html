@@ -9,6 +9,7 @@ export declare namespace Portal {
     | EventListener
     | EventListenerObject
     | Wire
+    | Interpolation
     | Node
     | ElementRef
     | null

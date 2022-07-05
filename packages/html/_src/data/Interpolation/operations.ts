@@ -7,6 +7,8 @@ export * from "@effect/html/data/Interpolation/operations/templateStringsArray"
 export * from "@effect/html/data/Interpolation/operations/toDocumentFragment"
 export * from "@effect/html/data/Interpolation/operations/toEntry"
 export * from "@effect/html/data/Interpolation/operations/toTemplate"
+export * from "@effect/html/data/Interpolation/operations/toValues"
 export * from "@effect/html/data/Interpolation/operations/type"
+export * from "@effect/html/data/Interpolation/operations/updates"
 export * from "@effect/html/data/Interpolation/operations/values"
 // codegen:end

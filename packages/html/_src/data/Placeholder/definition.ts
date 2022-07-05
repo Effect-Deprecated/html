@@ -1,5 +1,3 @@
-import type { NoneSym } from "@effect/html/data/Placeholder/operations/none"
-
 export const GenericSym = Symbol.for("@effect/html/data/Placeholder/Generic")
 export type GenericSym = typeof GenericSym
 
@@ -16,16 +14,13 @@ declare global {
  * @tsplus type effect/html/Placeholder
  */
 export type Placeholder<R> =
-  | Placeholder.Generic<never>
+  | Placeholder.Generic<R>
   | Effect<R, never, Placeholder.Value>
 
 export declare namespace Placeholder {
   export interface Generic<R> {
     readonly [GenericSym]: GenericSym
     readonly [_R]: (_: never) => R
-  }
-  export interface None extends Equals, Placeholder.Generic<never> {
-    readonly [NoneSym]: NoneSym
   }
   export type R<A> = [A] extends [Placeholder<infer R>] ? R : never
   export type Value =
@@ -34,7 +29,9 @@ export declare namespace Placeholder {
     | boolean
     | Handler
     | Interpolation
-    | Placeholder.None
+    | None
+    | Wire
+    | Node
     | ElementRef
     | Many
   export type Env<A extends Array<Placeholder<any>>> = { [k in keyof A]: Placeholder.R<A[k]> }[number]

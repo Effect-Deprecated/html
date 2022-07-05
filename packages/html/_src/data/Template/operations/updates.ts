@@ -240,12 +240,12 @@ function getChildNodes(self: Node | Wire): Array<Node> {
 // diffing will be related to such comment.
 // This helper is in charge of understanding how the new
 // content for such interpolation/interpolation should be updated
-function handleAnything(comment: Node) {
+function handleAnything(comment: Node): (newValue: Portal.Values) => void {
   let oldValue: Portal.Values
   let text: Text | null | undefined
   let nodes: Array<Node | Wire | null | undefined> = []
 
-  return (newValue: Portal.Values) => {
+  return (newValue) => {
     switch (typeof newValue) {
       // primitives are handled as text content
       case "string":
@@ -309,7 +309,7 @@ function handleAnything(comment: Node) {
 function event(
   node: Element,
   name: string
-): Template.Update {
+): (newValue: EventListenerOrEventListenerObject | null | undefined) => void {
   let lower: string
   let oldValue: EventListenerOrEventListenerObject | null | undefined
   let type = name.slice(2)
@@ -317,7 +317,7 @@ function event(
     type = lower.slice(2)
   }
 
-  return (newValue: EventListenerOrEventListenerObject | null | undefined) => {
+  return (newValue) => {
     if (oldValue !== newValue) {
       if (oldValue != null) {
         node.removeEventListener(type, oldValue)
@@ -332,12 +332,12 @@ function event(
   }
 }
 
-function attribute<R, E extends Event>(node: Element, name: string): Template.Update {
+function attribute<R, E extends Event>(node: Element, name: string): (newValue: string | null | undefined) => void {
   let oldValue: string | null | undefined
   let orphan = true
   const attributeNode = document.createAttributeNS(null, name)
 
-  return (newValue: string | null | undefined) => {
+  return (newValue) => {
     if (oldValue !== newValue) {
       oldValue = newValue
 
@@ -366,16 +366,16 @@ function attribute<R, E extends Event>(node: Element, name: string): Template.Up
   }
 }
 
-function ref(node: Element): Template.Update {
+export function ref(node: Element | null | undefined): (value: ElementRef | null | undefined) => void {
   let oldValue: ElementRef | null | undefined
 
-  return (newValue: ElementRef | null | undefined) => {
+  return (newValue) => {
     if (oldValue !== newValue) {
       oldValue = newValue
 
       if (newValue != null) {
         concreteElementRef(newValue)
-        newValue.ref.set(Maybe.some(node))
+        newValue.ref.set(Maybe.fromNullable(node))
       }
     }
   }

@@ -6,7 +6,7 @@ export class HandlerInternal implements Handler {
   readonly [GenericSym]: GenericSym = GenericSym
   readonly [_R]!: (_: never) => never
 
-  constructor(readonly eventListener: EventListenerOrEventListenerObject) {}
+  constructor(readonly eventListener: EventListenerOrEventListenerObject | string) {}
 }
 
 /**

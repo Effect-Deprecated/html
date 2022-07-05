@@ -6,7 +6,7 @@ import { HandlerInternal } from "@effect/html/data/Handler/operations/_internal/
  * @tsplus static effect/html/Handler/Ops __call
  */
 export function make(
-  eventListener: EventListenerOrEventListenerObject
+  eventListener: EventListenerOrEventListenerObject | string
 ): Effect.UIO<Handler> {
   return Effect.succeedNow(new HandlerInternal(eventListener))
 }
