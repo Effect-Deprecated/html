@@ -8,7 +8,9 @@ export function withHooks<R, R1, E, E1, A, B>(
     const ref = $(Ref.make(Chunk.empty<Effect.UIO<void>>()))
     const result = $(afterRenderRef.locally(Maybe.some(ref))(fa()).flatMap(f))
 
-    $(ref.get().map((hooks) => Effect.collectAllDiscard(hooks)))
+    $(
+      ref.get().flatMap((hooks) => Effect.collectAllDiscard(hooks))
+    )
 
     return result
   })

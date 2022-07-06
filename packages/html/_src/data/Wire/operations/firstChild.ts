@@ -8,7 +8,7 @@ export function firstChild(
 ): ChildNode {
   concreteWire(self)
 
-  if (self.firstChild == null) {
+  if (self.firstChild == undefined) {
     throw new Wire.NoFirstChildException()
   }
 

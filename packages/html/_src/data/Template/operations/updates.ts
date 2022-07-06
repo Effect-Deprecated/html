@@ -9,11 +9,15 @@ function isElement(u: unknown): u is Element {
   return u instanceof Element
 }
 
+function isDocumentFragment(u: unknown): u is DocumentFragment {
+  return u instanceof DocumentFragment
+}
+
 function diffable(
   node: Node | Wire | undefined | null,
   operation: number
 ): Node {
-  if (node == null) {
+  if (node == undefined) {
     throw new Template.MissingNodeException()
   }
 
@@ -38,14 +42,14 @@ function diffable(
 
 function synchronize(
   parentNode: ParentNode,
-  a: Array<Node | Wire | null | undefined>,
-  b: Array<Node | Wire | null | undefined>,
+  a: NodeListOf<ChildNode> | Array<Node | Wire | null | undefined>,
+  b: NodeListOf<ChildNode> | Array<Node | Wire | null | undefined>,
   get: (
     node: Node | Wire | null | undefined,
     operation: number
   ) => Node,
   before: Node
-): Array<Node | Wire | null | undefined> {
+): NodeListOf<ChildNode> | Array<Node | Wire | null | undefined> {
   const bLength = b.length
   let aEnd = a.length
   let bEnd = bLength
@@ -177,10 +181,10 @@ function synchronize(
 
 function diff(
   comment: Node,
-  oldNodes: Array<Node | Wire | null | undefined>,
-  newNodes: Array<Node | Wire | null | undefined>
-): Array<Node | Wire | null | undefined> {
-  if (comment.parentNode == null) {
+  oldNodes: NodeListOf<ChildNode> | Array<Node | Wire | null | undefined>,
+  newNodes: NodeListOf<ChildNode> | Array<Node | Wire | null | undefined>
+): NodeListOf<ChildNode> | Array<Node | Wire | null | undefined> {
+  if (comment.parentNode == undefined) {
     throw new Template.NoParentNodeException()
   }
   return synchronize(
@@ -209,31 +213,15 @@ function diff(
 
 function handlePrimitive(
   text: Text | null | undefined,
-  nodes: Array<Node | Wire | null | undefined>,
+  nodes: NodeListOf<ChildNode> | Array<Node | Wire | null | undefined>,
   comment: Node,
   newValue: string
-): Array<Node | Wire | null | undefined> {
+): NodeListOf<ChildNode> | Array<Node | Wire | null | undefined> {
   if (!text) {
     text = document.createTextNode("")
   }
   text.data = newValue
   return diff(comment, nodes, [text])
-}
-
-function getNodeType(self: Node | Wire): number {
-  if (Wire.isWire(self)) {
-    return self.nodeType
-  }
-
-  return self.nodeType
-}
-
-function getChildNodes(self: Node | Wire): Array<Node> {
-  if (Wire.isWire(self)) {
-    return [...self.childNodes]
-  }
-
-  return [...self.childNodes]
 }
 
 // if an interpolation represents a comment, the whole
@@ -243,7 +231,7 @@ function getChildNodes(self: Node | Wire): Array<Node> {
 function handleAnything(comment: Node): (newValue: Portal.Values) => void {
   let oldValue: Portal.Values
   let text: Text | null | undefined
-  let nodes: Array<Node | Wire | null | undefined> = []
+  let nodes: NodeListOf<ChildNode> | Array<Node | Wire | null | undefined> = []
 
   return (newValue) => {
     switch (typeof newValue) {
@@ -258,7 +246,7 @@ function handleAnything(comment: Node): (newValue: Portal.Values) => void {
         break
       case "object":
       case "undefined":
-        if (newValue == null) {
+        if (newValue == undefined) {
           if (oldValue != newValue) {
             oldValue = newValue
             nodes = diff(comment, nodes, [])
@@ -288,7 +276,7 @@ function handleAnything(comment: Node): (newValue: Portal.Values) => void {
         }
         // if the new value is a DOM node, or a wire, and it's
         // different from the one already live, then it's diffed.
-        // if the node is a portal, it's appended once via its childNodes
+        // if the node is a fragment, it's appended once via its childNodes
         // There is no `else` here, meaning if the content
         // is not expected one, nothing happens, as easy as that.
         if (oldValue !== newValue && (Wire.isWire(newValue) || isNode(newValue))) {
@@ -296,8 +284,9 @@ function handleAnything(comment: Node): (newValue: Portal.Values) => void {
           nodes = diff(
             comment,
             nodes,
-            getNodeType(newValue) === 11 ?
-              getChildNodes(newValue) :
+            isDocumentFragment(newValue) ?
+              // @TODO: This never seems to be triggered?
+              newValue.childNodes :
               [newValue]
           )
         }
@@ -319,11 +308,11 @@ function event(
 
   return (newValue) => {
     if (oldValue !== newValue) {
-      if (oldValue != null) {
+      if (oldValue != undefined) {
         node.removeEventListener(type, oldValue)
       }
 
-      if (newValue != null) {
+      if (newValue != undefined) {
         node.addEventListener(type, newValue)
       }
 
@@ -339,41 +328,37 @@ function attribute<R, E extends Event>(node: Element, name: string): (newValue: 
 
   return (newValue) => {
     if (oldValue !== newValue) {
-      oldValue = newValue
-
-      if (oldValue == null) {
+      if (newValue == undefined) {
         if (!orphan) {
           node.removeAttributeNode(attributeNode)
           orphan = true
         }
       } else {
-        const value = newValue
-        if (value == null) {
-          if (!orphan) {
-            node.removeAttributeNode(attributeNode)
-          }
-          orphan = true
-        } else {
-          attributeNode.value = value
+        attributeNode.value = newValue
 
-          if (orphan) {
-            node.setAttributeNodeNS(attributeNode)
-            orphan = false
-          }
+        if (orphan) {
+          node.setAttributeNodeNS(attributeNode)
+          orphan = false
         }
       }
+
+      oldValue = newValue
     }
   }
 }
 
-export function ref(node: Element | null | undefined): (value: ElementRef | null | undefined) => void {
+export function ref(node: Element | null | undefined): (newValue: ElementRef | null | undefined) => void {
   let oldValue: ElementRef | null | undefined
 
   return (newValue) => {
     if (oldValue !== newValue) {
-      oldValue = newValue
+      if (ElementRef.isElementRef(oldValue)) {
+        concreteElementRef(oldValue)
+        oldValue.ref.set(Maybe.none)
+      }
 
-      if (newValue != null) {
+      oldValue = newValue
+      if (newValue != undefined) {
         concreteElementRef(newValue)
         newValue.ref.set(Maybe.fromNullable(node))
       }
@@ -389,7 +374,7 @@ function handleAttribute<R>(
   node: Element,
   name: string
 ): Template.Update {
-  if (name[0] === "0" && name[1] === "n") {
+  if (name[0] === "o" && name[1] === "n") {
     return event(node, name)
   }
 
@@ -407,7 +392,7 @@ function text(node: Node): Template.Update {
     if (oldValue != newValue) {
       oldValue = newValue
 
-      node.textContent = newValue == null ? "" : newValue
+      node.textContent = newValue == undefined ? "" : newValue
     }
   }
 }
@@ -418,23 +403,23 @@ function text(node: Node): Template.Update {
 // In the attribute case, the attribute name is also carried along.
 function handlers(
   fragment: Node,
-  { name, path }: Template.Node
+  { name, path, type }: Template.Node
 ): Template.Update {
   const node = path.reduceRight(({ childNodes }, i) => {
     const node = childNodes[i]
 
-    if (node == null) {
+    if (node == undefined) {
       throw new Template.MissingNodeException()
     }
 
     return node
   }, fragment)
-  if (isNode(node)) {
+  if (type === "node") {
     return handleAnything(node)
   }
 
-  if (isElement(node)) {
-    if (name == null) {
+  if (type === "attr" && isElement(node)) {
+    if (name == undefined) {
       throw new Template.MissingAttributeNameException()
     }
     return handleAttribute(node, name)

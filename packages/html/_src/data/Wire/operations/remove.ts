@@ -8,11 +8,11 @@ export function remove(
 ): ChildNode {
   concreteWire(self)
 
-  if (self.firstChild == null) {
+  if (self.firstChild == undefined) {
     throw new Wire.NoFirstChildException()
   }
 
-  if (self.lastChild == null) {
+  if (self.lastChild == undefined) {
     throw new Wire.NoLastChildException()
   }
 

@@ -8,7 +8,7 @@ export function lastChild(
 ): ChildNode {
   concreteWire(self)
 
-  if (self.lastChild == null) {
+  if (self.lastChild == undefined) {
     throw new Wire.NoLastChildException()
   }
 

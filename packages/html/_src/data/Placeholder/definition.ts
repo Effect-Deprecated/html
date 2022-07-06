@@ -8,6 +8,8 @@ declare global {
   interface String extends Placeholder.Generic<never> {}
   interface Number extends Placeholder.Generic<never> {}
   interface Boolean extends Placeholder.Generic<never> {}
+  interface Element extends Placeholder.Generic<never> {}
+  interface Node extends Placeholder.Generic<never> {}
 }
 
 /**
@@ -30,6 +32,7 @@ export declare namespace Placeholder {
     | Handler
     | Interpolation
     | None
+    | Element
     | Wire
     | Node
     | ElementRef

@@ -12,7 +12,7 @@ export function update(
   for (let i = 0; i < self.updates.length; i++) {
     const f = self.updates[i]
 
-    if (f == null) {
+    if (f == undefined) {
       throw new Entry.MissingAttributeUpdateHandlerException()
     }
 

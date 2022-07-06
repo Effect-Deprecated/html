@@ -44,14 +44,10 @@ function getValue(value: Portal.Values): string {
         return value.map(getValue).join("")
       }
 
-      if (Interpolation.isInterpolation(value)) {
-        return value.toString
-      }
-
       break
   }
 
-  return value == null ? "" : escape(String(value))
+  return value == undefined ? "" : escape(String(value))
 }
 
 const passRef = ref(null)
@@ -140,7 +136,7 @@ export function updates(
         default:
           updates.push((value: Portal.Values) => {
             let result = pre
-            if (value != null) {
+            if (value != undefined) {
               result += attribute(name, quote, String(value))
             }
             return result

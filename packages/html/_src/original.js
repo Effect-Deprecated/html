@@ -99,7 +99,7 @@ self.uhtml = (function (exports) {
     for (const key in values) {
       const name = key === 'role' ? key : `aria-${key}`;
       const value = values[key];
-      if (value == null)
+      if (value == undefined)
         node.removeAttribute(name);
       else
         node.setAttribute(name, value);
@@ -112,7 +112,7 @@ self.uhtml = (function (exports) {
     return newValue => {
       if (oldValue !== newValue) {
         oldValue = newValue;
-        if (oldValue == null) {
+        if (oldValue == undefined) {
           if (!orphan) {
             node.removeAttributeNode(attributeNode);
             orphan = true;
@@ -120,7 +120,7 @@ self.uhtml = (function (exports) {
         }
         else {
           const value = newValue;
-          if (value == null) {
+          if (value == undefined) {
             if (!orphan)
               node.removeAttributeNode(attributeNode);
               orphan = true;
@@ -151,7 +151,7 @@ self.uhtml = (function (exports) {
   const data = ({dataset}) => values => {
     for (const key in values) {
       const value = values[key];
-      if (value == null)
+      if (value == undefined)
         delete dataset[key];
       else
         dataset[key] = value;
@@ -197,7 +197,7 @@ self.uhtml = (function (exports) {
     return newValue => {
       if (oldValue != newValue) {
         oldValue = newValue;
-        node.textContent = newValue == null ? '' : newValue;
+        node.textContent = newValue == undefined ? '' : newValue;
       }
     };
   };
@@ -442,7 +442,7 @@ self.uhtml = (function (exports) {
         // null, and undefined are used to cleanup previous content
         case 'object':
         case 'undefined':
-          if (newValue == null) {
+          if (newValue == undefined) {
             if (oldValue != newValue) {
               oldValue = newValue;
               nodes = diff(comment, nodes, []);

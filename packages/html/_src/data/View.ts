@@ -1,1 +1,1 @@
-export type View = Interpolation | Node | Wire
+export type View = Interpolation | Node | Wire | DocumentFragment

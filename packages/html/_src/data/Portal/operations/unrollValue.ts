@@ -13,12 +13,14 @@ export function unrollValue(
     values[index] = self.getChild(index).unroll(
       value
     )
-  } else if (Many.isMany(value)) {
-    values[index] = self.getChild(index).unrollValues(value.toArray)
+  } else if (Handler.isHandler(value)) {
+    values[index] = value.toEventListener
+  } else if (None.isNone(value)) {
+    values[index] = null
   } // arrays are recursively resolved so that each entry will contain
   // also a DOM node or a wire, hence it can be diffed if/when needed
-  else if (Array.isArray(value)) {
-    self.getChild(index).unrollValues(value)
+  else if (Many.isMany(value)) {
+    values[index] = self.getChild(index).unrollValues(value.toArray)
   } // if the value is nothing special, the stack doesn't need to retain data
   // this is useful also to cleanup previously retained data, if the value
   // was a Interpolation, or an Array, but not anymore, i.e.:

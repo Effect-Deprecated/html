@@ -9,16 +9,16 @@ export function toWire(
 ): Wire | Node {
   concreteEntry(self)
 
-  if (self.wire == null) {
+  if (self.wire == undefined) {
     if (self.content.firstChild === self.content.lastChild) {
-      if (self.content.lastChild != null) {
+      if (self.content.lastChild != undefined) {
         self.wire = self.content.lastChild
+      } else {
+        self.wire = self.content
       }
-
-      self.wire = self.content
+    } else {
+      self.wire = Wire(self.content)
     }
-
-    self.wire = Wire(self.content)
   }
 
   return self.wire

@@ -7,6 +7,8 @@ function toValue(value: Placeholder.Value | Portal.Values): Portal.Values {
     newValue = null
   } else if (Many.isMany(value)) {
     newValue = value.toArray.map(toValue)
+  } else if (Interpolation.isInterpolation(value)) {
+    newValue = value.toString
   } else {
     newValue = value
   }

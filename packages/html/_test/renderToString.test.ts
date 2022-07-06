@@ -5,7 +5,7 @@ special.toString = function() {
   return "alert(\"special\")"
 }
 
-describe("renderToString", () => {
+describe.concurrent("renderToString", () => {
   it("should render with no placeholders or content", async () => {
     const result = await renderToString(html`<!doctype html><html />`).unsafeRunPromise()
 
@@ -56,7 +56,7 @@ describe("renderToString", () => {
     assert.strictEqual(result, `<this>is a html test</this>`)
   })
   it("should not render with eventListenerObject handler with empty handleEvent and click", async () => {
-    const result = await renderToString(html`<this onclick=${
+    const result = await renderToString(html`<this onclick='${
       Handler({
         handleEvent() {
           //
@@ -66,13 +66,13 @@ describe("renderToString", () => {
           //
         }
       })
-    }>is a html test</this>`)
+    }'>is a html test</this>`)
       .unsafeRunPromise()
 
     assert.strictEqual(result, `<this>is a html test</this>`)
   })
   it("should render with eventListenerObject handler with special function toString", async () => {
-    const result = await renderToString(html`<this onclick=${
+    const result = await renderToString(html`<this onclick="${
       Handler({
         handleEvent() {
           //
@@ -80,16 +80,10 @@ describe("renderToString", () => {
         // @ts-expect-error
         onclick: special
       })
-    }>is a html test</this>`)
+    }">is a html test</this>`)
       .unsafeRunPromise()
 
     assert.strictEqual(result, `<this onclick="alert(&quot;special&quot;)">is a html test</this>`)
-  })
-  it("should render with string handler", async () => {
-    const result = await renderToString(html`<this onclick=${Handler("alert(123)")}>is a html test</this>`)
-      .unsafeRunPromise()
-
-    assert.strictEqual(result, `<this onclick="alert(123)">is a html test</this>`)
   })
   it("should not render ElementRef and have an Maybe.none", async () => {
     const result = await renderToString(Do(($) => {

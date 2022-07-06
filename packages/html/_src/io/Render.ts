@@ -7,7 +7,7 @@ export interface Tag {
   ): Effect<Placeholder.Env<A> | RenderContext, never, View>
   for(
     ref: object,
-    id: unknown
+    id?: unknown
   ): <A extends Array<Placeholder<any>>>(
     template: TemplateStringsArray,
     ...placeholders: A
@@ -59,7 +59,7 @@ function tag(
       // that usually carry a unique identifier
       for(
         ref: object,
-        id: unknown
+        id?: unknown
       ) {
         return <A extends Array<Placeholder<any>>>(
           template: TemplateStringsArray,
