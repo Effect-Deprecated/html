@@ -6,6 +6,8 @@ const elements = /<([a-z]+[a-z0-9:._-]*)([^>]*?)(\/?)>/g
 const attributes = /([^\s\\>"'=]+)\s*=\s*(['"]?)\x01/g
 // eslint-disable-next-line no-control-regex
 const interpolations = /[\x01\x02]/g
+// eslint-disable-next-line no-control-regex
+const directives = /(<\w+[^>]*)(\x01)/g
 
 // \x01 Node.ELEMENT_NODE
 // \x02 Node.ATTRIBUTE_NODE
@@ -21,6 +23,7 @@ export function instrument(
 ): string {
   concreteInterpolation(self)
   let i = 0
+
   return self.template
     .join("\x01")
     .trim()
@@ -35,10 +38,14 @@ export function instrument(
       }
     )
     .replace(
+      directives,
+      (_, element, node) => `${element}${Interpolation.PREFIX}${i++}`
+    )
+    .replace(
       interpolations,
       interpolation =>
         interpolation === "\x01" ?
-          ("<!--" + Interpolation.PREFIX + i++ + "-->") :
-          (Interpolation.PREFIX + i++)
+          `<!--${Interpolation.PREFIX}${i++}-->` :
+          `${Interpolation.PREFIX}${i++}`
     )
 }

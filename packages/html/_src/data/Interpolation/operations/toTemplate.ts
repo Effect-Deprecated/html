@@ -16,6 +16,22 @@ function createPath(node0: Node): Array<number> {
 
 const textOnly = /^(?:textarea|script|style|title|plaintext|xmp)$/
 
+function toHTML(html: string): DocumentFragment {
+  const template = document.createElement("template")
+  template.innerHTML = html
+  return template.content
+}
+
+function toSVG(svg: string): DocumentFragment {
+  const xml = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+  xml.innerHTML = svg
+
+  const content = document.createDocumentFragment()
+  content.append(...xml.childNodes)
+
+  return content
+}
+
 /**
  * a template is instrumented to be able to retrieve where updates are needed.
  * Each unique template becomes a portal, cloned once per each other
@@ -28,7 +44,7 @@ export function toTemplate(
 ): Template {
   concreteInterpolation(self)
   const text = self.instrument
-  const content = self.toDocumentFragment
+  const content = self.isSVG ? toSVG(text) : toHTML(text)
   // once instrumented and reproduced as portal, it's crawled
   // to find out where each update is in the portal tree
   const tw = document.createTreeWalker(content, 1 | 128)
@@ -61,11 +77,21 @@ export function toTemplate(
       // the isµX attribute will be removed as irrelevant for the layout
       // let svg = -1;
       while (node.hasAttribute(search)) {
-        nodes.push({
-          type: "attr",
-          path: createPath(node),
-          name: node.getAttribute(search)
-        })
+        const name = node.getAttribute(search)
+        if (name === "") {
+          nodes.push({
+            type: "dir",
+            path: createPath(node),
+            name: undefined
+          })
+        } else {
+          nodes.push({
+            type: "attr",
+            path: createPath(node),
+            name
+          })
+        }
+
         node.removeAttribute(search)
         search = `${Interpolation.PREFIX}${++i}`
       }

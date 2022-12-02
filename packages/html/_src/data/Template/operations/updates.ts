@@ -425,7 +425,13 @@ function handlers(
     return handleAttribute(node, name)
   }
 
-  return text(node)
+  if (type === "text") {
+    return text(node)
+  }
+
+  return () => {
+    //
+  }
 }
 
 /**

@@ -28,7 +28,7 @@ export declare namespace Template {
     | ((newValue: boolean) => void)
     | ((newValue: Portal.Values) => void)
   export interface Node {
-    type: "node" | "text" | "attr"
+    type: "node" | "text" | "attr" | "dir"
     path: Array<number>
     name: string | null | undefined
   }
